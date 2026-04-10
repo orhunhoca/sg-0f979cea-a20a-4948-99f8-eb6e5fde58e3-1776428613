@@ -1,6 +1,6 @@
 ---
 title: User Profiles & Directory
-status: in_progress
+status: done
 priority: high
 type: feature
 tags: [profiles, search]
@@ -14,7 +14,7 @@ Kullanıcı profil sayfası ve mezun dizini. Profil: mezuniyet yılı, bölüm, 
 
 ## Checklist
 - [x] profiles tablosu genişletme: graduation_year, department, profession, company, city, bio, avatar_url
-- [ ] ProfilePage.tsx: profil görüntüleme, düzenleme formu
-- [ ] AlumniDirectory.tsx: mezun listesi, card layout
-- [ ] Search & Filter: graduation year, department, city, profession filtreler
-- [ ] profileService.ts: CRUD operations
+- [x] ProfilePage.tsx: profil görüntüleme, düzenleme formu
+- [x] AlumniDirectory.tsx: mezun listesi, card layout
+- [x] Search & Filter: graduation year, department, city, profession filtreler
+- [x] profileService.ts: CRUD operations
