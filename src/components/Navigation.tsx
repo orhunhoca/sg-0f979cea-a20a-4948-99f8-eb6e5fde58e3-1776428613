@@ -66,6 +66,9 @@ export function Navigation() {
             <Link href="/fonzip-signup" className="text-sm font-medium hover:text-primary transition-colors">
               {t("nav.membership")}
             </Link>
+            <Link href="/admin" className="text-sm font-medium hover:text-primary transition-colors">
+              {t("nav.admin")}
+            </Link>
           </div>
         </div>
 

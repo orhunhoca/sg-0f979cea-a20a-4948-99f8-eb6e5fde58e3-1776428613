@@ -13,13 +13,16 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 const translations = {
   tr: {
     // Navigation
-    "nav.home": "Ana Sayfa",
-    "nav.directory": "Mezunlar",
-    "nav.messages": "Mesajlar",
-    "nav.profile": "Profilim",
-    "nav.events": "Etkinlikler",
-    "nav.membership": "Üyelik Başvurusu",
-    "nav.signout": "Çıkış Yap",
+    nav: {
+      home: "Ana Sayfa",
+      directory: "Mezun Dizini",
+      messages: "Mesajlar",
+      events: "Etkinlikler",
+      membership: "Üyelik Başvurusu",
+      profile: "Profil",
+      signout: "Çıkış Yap",
+      admin: "Admin Panel",
+    },
     
     // Home
     "home.welcome": "Hoş Geldiniz",
@@ -114,13 +117,16 @@ const translations = {
   },
   en: {
     // Navigation
-    "nav.home": "Home",
-    "nav.directory": "Alumni",
-    "nav.messages": "Messages",
-    "nav.profile": "My Profile",
-    "nav.events": "Events",
-    "nav.membership": "Membership Application",
-    "nav.signout": "Sign Out",
+    nav: {
+      home: "Home",
+      directory: "Alumni Directory",
+      messages: "Messages",
+      events: "Events",
+      membership: "Membership Application",
+      profile: "Profile",
+      signout: "Sign Out",
+      admin: "Admin Panel",
+    },
     
     // Home
     "home.welcome": "Welcome",
