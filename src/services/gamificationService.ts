@@ -321,12 +321,3 @@ export const gamificationService = {
     }
   },
 };
-</gamificationService.ts>
-
-**Point Award Rules:**
-- Profile complete: 50 points
-- First connection: 20 points
-- Each new connection: 10 points
-- Send message: 5 points
-- Receive badge: 100 points
-</gamificationService.ts>
