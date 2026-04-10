@@ -1,6 +1,6 @@
 ---
 title: Language Toggle & Fonzip Integration
-status: todo
+status: done
 priority: medium
 type: feature
 tags: [i18n, integration]
@@ -10,12 +10,12 @@ position: 5
 ---
 
 ## Notes
-Türkçe + İngilizce dil desteği. Context-based i18n. Fonzip kayıt formu ve etkinlik sayfası entegrasyonu (iframe veya external link).
+Türkçe + İngilizce dil desteği ve Fonzip form/etkinlik entegrasyonu. Language context ile çoklu dil. Fonzip embed sayfaları.
 
 ## Checklist
-- [ ] i18n context: LanguageProvider, useLangauge hook
-- [ ] Tüm static text için translation keys
-- [ ] Language toggle switch (header'da)
-- [ ] Fonzip üyelik formu: button → https://fonzip.com/eymeder/form/uyelik-basvuru-formu
-- [ ] Fonzip etkinlikler: embed veya link → https://fonzip.com/eymeder/etkinlikler
-- [ ] translations/tr.json + translations/en.json dosyaları
+- [x] LanguageContext: TR/EN toggle, localStorage persistence
+- [x] translations/tr.json + translations/en.json: tüm UI metinleri
+- [x] Navigation'a dil değiştirme butonu
+- [x] /fonzip-signup sayfası: https://fonzip.com/eymeder/form/uyelik-basvuru-formu
+- [x] /fonzip-events sayfası: https://fonzip.com/eymeder/etkinlikler
+- [x] translations embedded in LanguageContext
