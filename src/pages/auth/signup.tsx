@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -9,12 +9,60 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { SEO } from "@/components/SEO";
 import { signupWithMembershipNumber } from "@/services/authService";
 import { Loader2, CheckCircle2 } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
+import { supabase } from "@/lib/supabase";
 
-export default function Signup() {
+export default function SignupPage() {
   const router = useRouter();
+  const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [step, setStep] = useState<"membership" | "details">("membership");
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+    confirmPassword: "",
+    membershipNumber: "",
+    fullName: "",
+    phone: "",
+  });
+
+  // Auto-create admin user on first load (only once)
+  useEffect(() => {
+    const createAdminIfNeeded = async () => {
+      const adminCreated = localStorage.getItem("admin_created");
+      if (adminCreated) return;
+
+      try {
+        // Check if admin membership exists but not used
+        const { data: adminMembership } = await supabase
+          .from("membership_numbers")
+          .select("is_used")
+          .eq("membership_number", "00000001")
+          .eq("email", "admin@mezunlar.com")
+          .single();
+
+        if (adminMembership && !adminMembership.is_used) {
+          // Create admin user automatically
+          const { error } = await authService.signupWithMembershipNumber({
+            email: "admin@mezunlar.com",
+            password: "Admin123!",
+            membershipNumber: "00000001",
+            fullName: "Admin Kullanıcı",
+          });
+
+          if (!error) {
+            localStorage.setItem("admin_created", "true");
+            console.log("Admin user created successfully");
+          }
+        }
+      } catch (error) {
+        console.log("Admin check error:", error);
+      }
+    };
+
+    createAdminIfNeeded();
+  }, []);
 
   // Step 1: Membership validation
   const [membershipNumber, setMembershipNumber] = useState("");
