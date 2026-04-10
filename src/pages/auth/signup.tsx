@@ -44,7 +44,7 @@ export default function SignupPage() {
 
         if (adminMembership && !adminMembership.is_used) {
           // Create admin user automatically
-          const { error } = await authService.signupWithMembershipNumber({
+          const { error } = await signupWithMembershipNumber({
             email: "admin@mezunlar.com",
             password: "Admin123!",
             membershipNumber: "00000001",
