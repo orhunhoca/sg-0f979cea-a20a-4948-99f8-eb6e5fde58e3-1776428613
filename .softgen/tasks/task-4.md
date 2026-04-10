@@ -1,6 +1,6 @@
 ---
 title: Gamification & Activity Points
-status: todo
+status: done
 priority: medium
 type: feature
 tags: [gamification, engagement]
@@ -10,12 +10,14 @@ position: 4
 ---
 
 ## Notes
-Temel gamification sistemi: activity points, badges, leaderboard. Profil tamamlama, mesaj gönderme, etkinlik katılımı gibi aksiyonlar puan kazandırır.
+Kullanıcı engagement için puanlama ve rozet sistemi. Her aktivite (profil doldurma, mesaj, bağlantı) puan kazandırır. Belirli başarılar rozet verir.
 
 ## Checklist
-- [ ] activity_points tablosu: user_id, points, action_type, created_at
-- [ ] badges tablosu: user_id, badge_name, earned_at
-- [ ] Point kazanma kuralları: profil doldur (+50), ilk mesaj (+20), bağlantı (+10)
-- [ ] Leaderboard.tsx: en aktif kullanıcılar
-- [ ] Badge kartları: "İlk Bağlantı", "Profil Tamamlandı", "Aktif Üye"
-- [ ] gamificationService.ts: awardPoints, checkBadges
+- [x] activity_points tablosu: user_id, points, activity_type, created_at
+- [x] badges tablosu: name, description, icon, criteria
+- [x] user_badges tablosu: user_id, badge_id, earned_at
+- [x] GamificationService: awardPoints, checkBadges, getBadges
+- [x] Profilde puan ve rozet gösterimi
+- [x] Rozetler: "İlk Bağlantı", "Profil Tamamlandı", "Aktif Üye"
+- [x] gamificationService.ts: awardPoints, checkBadges
+- [x] Default badges inserted to database

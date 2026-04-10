@@ -8,9 +8,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { authService } from "@/services/authService";
 import { profileService, type ProfileUpdate } from "@/services/profileService";
-import { Loader2, Upload, Save, User, Briefcase, MapPin, GraduationCap } from "lucide-react";
+import { gamificationService } from "@/services/gamificationService";
+import { Loader2, Upload, Save, User, Briefcase, MapPin, GraduationCap, Trophy, Award } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 export default function ProfilePage() {
@@ -20,6 +22,7 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [editing, setEditing] = useState(false);
+  const [userStats, setUserStats] = useState<any>(null);
   const [formData, setFormData] = useState<ProfileUpdate>({
     full_name: "",
     phone: "",
@@ -43,19 +46,28 @@ export default function ProfilePage() {
     }
     setUser(currentUser);
 
-    const { data: profile } = await profileService.getMyProfile();
-    if (profile) {
+    const [profileResult, statsResult] = await Promise.all([
+      profileService.getMyProfile(),
+      gamificationService.getUserStats(),
+    ]);
+
+    if (profileResult.data) {
       setFormData({
-        full_name: profile.full_name || "",
-        phone: profile.phone || "",
-        graduation_year: profile.graduation_year || undefined,
-        department: profile.department || "",
-        profession: profile.profession || "",
-        company: profile.company || "",
-        city: profile.city || "",
-        bio: profile.bio || "",
+        full_name: profileResult.data.full_name || "",
+        phone: profileResult.data.phone || "",
+        graduation_year: profileResult.data.graduation_year || undefined,
+        department: profileResult.data.department || "",
+        profession: profileResult.data.profession || "",
+        company: profileResult.data.company || "",
+        city: profileResult.data.city || "",
+        bio: profileResult.data.bio || "",
       });
     }
+
+    if (statsResult.data) {
+      setUserStats(statsResult.data);
+    }
+
     setLoading(false);
   };
 
@@ -70,6 +82,9 @@ export default function ProfilePage() {
         variant: "destructive",
       });
     } else {
+      // Award points for profile update
+      await gamificationService.awardPoints("profile_update", 10);
+      
       toast({
         title: "Başarılı",
         description: "Profiliniz güncellendi.",
@@ -120,8 +135,8 @@ export default function ProfilePage() {
         <Navigation />
 
         <main className="container py-8">
-          <div className="max-w-3xl mx-auto">
-            <div className="mb-6 flex items-center justify-between">
+          <div className="max-w-3xl mx-auto space-y-6">
+            <div className="flex items-center justify-between">
               <h1 className="text-3xl font-heading font-bold">Profilim</h1>
               {!editing && (
                 <Button onClick={() => setEditing(true)}>
@@ -130,6 +145,75 @@ export default function ProfilePage() {
               )}
             </div>
 
+            {/* Gamification Stats */}
+            {userStats && (
+              <Card className="bg-gradient-to-r from-primary/10 to-accent/10 border-primary/20">
+                <CardContent className="pt-6">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="text-center">
+                      <div className="flex items-center justify-center mb-2">
+                        <Trophy className="h-6 w-6 text-accent" />
+                      </div>
+                      <div className="text-2xl font-heading font-bold text-primary">
+                        {userStats.totalPoints}
+                      </div>
+                      <div className="text-sm text-muted-foreground">Toplam Puan</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="flex items-center justify-center mb-2">
+                        <Award className="h-6 w-6 text-accent" />
+                      </div>
+                      <div className="text-2xl font-heading font-bold text-primary">
+                        {userStats.earnedBadges.length}
+                      </div>
+                      <div className="text-sm text-muted-foreground">Rozet</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="flex items-center justify-center mb-2">
+                        <span className="text-2xl">📊</span>
+                      </div>
+                      <div className="text-2xl font-heading font-bold text-primary">
+                        Seviye {userStats.level}
+                      </div>
+                      <div className="text-sm text-muted-foreground">Seviye</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="flex items-center justify-center mb-2">
+                        <span className="text-2xl">🏆</span>
+                      </div>
+                      <div className="text-2xl font-heading font-bold text-primary">
+                        {userStats.rank}
+                      </div>
+                      <div className="text-sm text-muted-foreground">Rütbe</div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Earned Badges */}
+            {userStats && userStats.earnedBadges.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Award className="h-5 w-5" />
+                    Kazanılan Rozetler
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex flex-wrap gap-3">
+                    {userStats.earnedBadges.map((badge: any) => (
+                      <Badge key={badge.id} variant="secondary" className="text-sm py-2 px-3">
+                        <span className="mr-2">{badge.icon}</span>
+                        {badge.name}
+                      </Badge>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Profile Card */}
             <Card>
               <CardHeader>
                 <div className="flex items-center gap-6">
