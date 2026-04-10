@@ -6,24 +6,37 @@ export default async function handler(
   res: NextApiResponse
 ) {
   if (req.method !== "GET") {
-    return res.status(405).json({ message: "Method not allowed" });
+    return res.status(405).json({ valid: false, message: "Method not allowed" });
   }
 
   const { number, email } = req.query;
 
-  if (!number || !email || typeof number !== "string" || typeof email !== "string") {
-    return res.status(400).json({ valid: false, message: "Geçersiz parametreler" });
+  if (!number || !email) {
+    return res.status(400).json({ 
+      valid: false, 
+      message: "Üyelik numarası ve e-posta gerekli" 
+    });
   }
 
   try {
     const { data, error } = await supabase
       .from("membership_numbers")
-      .select("full_name, is_used")
+      .select("*")
       .eq("membership_number", number)
       .eq("email", email)
-      .single();
+      .maybeSingle();
 
-    if (error || !data) {
+    console.log("Validation check:", { number, email, data, error });
+
+    if (error) {
+      console.error("Validation error:", error);
+      return res.status(500).json({ 
+        valid: false, 
+        message: "Sunucu hatası" 
+      });
+    }
+
+    if (!data) {
       return res.status(200).json({ 
         valid: false, 
         message: "Üyelik numarası veya e-posta eşleşmiyor" 
@@ -42,7 +55,7 @@ export default async function handler(
       fullName: data.full_name 
     });
   } catch (error) {
-    console.error("Membership validation error:", error);
+    console.error("Unexpected error:", error);
     return res.status(500).json({ 
       valid: false, 
       message: "Sunucu hatası" 
