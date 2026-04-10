@@ -1,6 +1,6 @@
 ---
 title: Real-time Messaging & Connections
-status: todo
+status: done
 priority: high
 type: feature
 tags: [messaging, realtime]
@@ -13,9 +13,9 @@ position: 3
 Gerçek zamanlı mesajlaşma sistemi. Supabase Realtime kullanarak birebir sohbet. Bağlantı istekleri (LinkedIn-style).
 
 ## Checklist
-- [ ] messages tablosu: sender_id, receiver_id, content, created_at, read
-- [ ] connections tablosu: requester_id, receiver_id, status (pending/accepted)
-- [ ] MessagesPage.tsx: sohbet listesi + aktif sohbet görünümü
-- [ ] Realtime subscription setup: yeni mesajları canlı göster
-- [ ] Connection requests: gönder, kabul et, reddet
-- [ ] messageService.ts: send, fetch, markAsRead
+- [x] messages tablosu: sender_id, receiver_id, content, created_at, read
+- [x] connections tablosu: requester_id, receiver_id, status (pending/accepted)
+- [x] MessagesPage.tsx: sohbet listesi + aktif sohbet görünümü
+- [x] Realtime subscription setup: yeni mesajları canlı göster
+- [x] Connection requests: gönder, kabul et, reddet
+- [x] messageService.ts: send, fetch, markAsRead
