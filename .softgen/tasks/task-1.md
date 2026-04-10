@@ -1,6 +1,6 @@
 ---
 title: Design System & Authentication Setup
-status: in_progress
+status: completed
 priority: urgent
 type: feature
 tags: [design, auth, foundation]
@@ -15,8 +15,10 @@ Core design system kurulumu ve authentication altyapısı. Supabase ile mail + m
 ## Checklist
 - [x] globals.css: kurumsal mavi + turuncu accent renkleri, Plus Jakarta Sans + Work Sans fontlar
 - [x] tailwind.config.ts: custom color tokens kayıt
-- [ ] Supabase auth setup: profiles tablosu + RLS (T1 - private user data)
-- [ ] membership_numbers tablosu: number, email, name, is_used, created_at
-- [ ] Login sayfası: mail + 8 haneli numara formu, validation
-- [ ] Signup sayfası: membership number ile otomatik eşleştirme
-- [ ] AuthService: login, signup, session management
+- [x] Supabase auth setup: profiles tablosu + RLS (T1 - private user data)
+- [x] membership_numbers tablosu: number, email, name, is_used, created_at
+- [x] Login sayfası: mail + 8 haneli numara formu, validation
+- [x] Signup sayfası: membership number ile otomatik eşleştirme
+- [x] AuthService: login, signup, session management
+- [x] Navigation component: header with user menu
+- [x] Ana sayfa: dashboard with stats and quick actions

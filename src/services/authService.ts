@@ -33,6 +33,131 @@ const getURL = () => {
   return url
 }
 
+export async function loginWithMembershipNumber(email: string, membershipNumber: string) {
+  try {
+    // First validate membership number
+    const { data: membershipData, error: membershipError } = await supabase
+      .from("membership_numbers")
+      .select("is_used")
+      .eq("membership_number", membershipNumber)
+      .eq("email", email)
+      .single();
+
+    if (membershipError || !membershipData) {
+      return { 
+        user: null, 
+        session: null, 
+        error: new Error("Geçersiz üyelik numarası veya e-posta") 
+      };
+    }
+
+    if (!membershipData.is_used) {
+      return { 
+        user: null, 
+        session: null, 
+        error: new Error("Bu hesap henüz oluşturulmamış. Lütfen önce kayıt olun.") 
+      };
+    }
+
+    // Use membership number as password for login
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password: membershipNumber,
+    });
+
+    return { user: data.user, session: data.session, error };
+  } catch (error: any) {
+    console.error("Login with membership number error:", error);
+    return { user: null, session: null, error };
+  }
+}
+
+export async function signupWithMembershipNumber({
+  email,
+  password,
+  membershipNumber,
+  fullName,
+  phone,
+}: {
+  email: string;
+  password: string;
+  membershipNumber: string;
+  fullName: string;
+  phone?: string;
+}) {
+  try {
+    // Create auth user with password
+    const { data: authData, error: authError } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          full_name: fullName,
+          membership_number: membershipNumber,
+        },
+      },
+    });
+
+    if (authError) {
+      return { user: null, session: null, error: authError };
+    }
+
+    if (!authData.user) {
+      return { 
+        user: null, 
+        session: null, 
+        error: new Error("Kullanıcı oluşturulamadı") 
+      };
+    }
+
+    // Update profile with additional data
+    const { error: profileError } = await supabase
+      .from("profiles")
+      .update({
+        full_name: fullName,
+        phone: phone || null,
+        membership_number: membershipNumber,
+      })
+      .eq("id", authData.user.id);
+
+    if (profileError) {
+      console.error("Profile update error:", profileError);
+    }
+
+    // Mark membership number as used
+    const { error: membershipError } = await supabase
+      .from("membership_numbers")
+      .update({
+        is_used: true,
+        used_by: authData.user.id,
+      })
+      .eq("membership_number", membershipNumber);
+
+    if (membershipError) {
+      console.error("Membership number update error:", membershipError);
+    }
+
+    return { user: authData.user, session: authData.session, error: null };
+  } catch (error: any) {
+    console.error("Signup with membership number error:", error);
+    return { user: null, session: null, error };
+  }
+}
+
+export async function loginWithEmail(email: string, password: string) {
+  try {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    return { user: data.user, session: data.session, error };
+  } catch (error: any) {
+    console.error("Email login error:", error);
+    return { user: null, session: null, error };
+  }
+}
+
 export const authService = {
   // Get current user
   async getCurrentUser(): Promise<AuthUser | null> {
