@@ -9,7 +9,11 @@ export default async function handler(
     return res.status(405).json({ valid: false, message: "Method not allowed" });
   }
 
-  const { number, email } = req.query;
+  const numberParam = req.query.number;
+  const emailParam = req.query.email;
+
+  const number = Array.isArray(numberParam) ? numberParam[0] : numberParam;
+  const email = Array.isArray(emailParam) ? emailParam[0] : emailParam;
 
   if (!number || !email) {
     return res.status(400).json({ 
