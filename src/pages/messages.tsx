@@ -60,9 +60,9 @@ export default function MessagesPage() {
   };
 
   const subscribeToNewMessages = () => {
-    if (!selectedPartnerId) return;
+    if (!selectedPartnerId || !user) return;
 
-    const channel = messageService.subscribeToMessages(selectedPartnerId, (message) => {
+    const channel = messageService.subscribeToMessages(user.id, selectedPartnerId, (message) => {
       setMessages((prev) => [...prev, message]);
       messageService.markAsRead(selectedPartnerId);
     });

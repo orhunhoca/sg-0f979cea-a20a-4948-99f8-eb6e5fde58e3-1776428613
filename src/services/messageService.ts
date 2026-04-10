@@ -103,11 +103,11 @@ export const messageService = {
             partnerAvatar: partner?.avatar_url || null,
             lastMessage: msg.content,
             lastMessageTime: msg.created_at,
-            unreadCount: isReceiver && !msg.is_read ? 1 : 0,
+            unreadCount: isReceiver && !msg.read ? 1 : 0,
           });
         } else {
           const existing = conversationsMap.get(partnerId)!;
-          if (isReceiver && !msg.is_read) {
+          if (isReceiver && !msg.read) {
             existing.unreadCount += 1;
           }
         }
@@ -132,10 +132,10 @@ export const messageService = {
 
       const { error } = await supabase
         .from("messages")
-        .update({ is_read: true })
+        .update({ read: true })
         .eq("sender_id", partnerId)
         .eq("receiver_id", user.id)
-        .eq("is_read", false);
+        .eq("read", false);
 
       console.log("Mark as read:", { partnerId, error });
       return { error };
@@ -146,11 +146,7 @@ export const messageService = {
   },
 
   // Subscribe to real-time messages
-  subscribeToMessages(partnerId: string, callback: (message: Message) => void) {
-    const { data: { user } } = supabase.auth.getUser();
-
-    if (!user) return null;
-
+  subscribeToMessages(currentUserId: string, partnerId: string, callback: (message: Message) => void) {
     const channel = supabase
       .channel("messages")
       .on(
@@ -159,7 +155,7 @@ export const messageService = {
           event: "INSERT",
           schema: "public",
           table: "messages",
-          filter: `receiver_id=eq.${user.then((u) => u.user?.id)}`,
+          filter: `receiver_id=eq.${currentUserId}`,
         },
         (payload) => {
           const message = payload.new as Message;
