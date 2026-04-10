@@ -3,18 +3,34 @@ import type { Tables } from "@/integrations/supabase/types";
 
 export type ActivityPoint = Tables<"activity_points">;
 export type Badge = Tables<"badges">;
-export type UserBadge = Tables<"user_badges">;
+
+export interface BadgeDetails {
+  name: string;
+  description: string;
+  icon: string;
+  type: string;
+}
 
 export interface UserStats {
   totalPoints: number;
-  earnedBadges: Badge[];
+  earnedBadges: BadgeDetails[];
   level: number;
   rank: string;
 }
 
+// Static badge dictionary since they are not stored in a separate table
+export const BADGE_DICTIONARY: Record<string, BadgeDetails> = {
+  profile_complete: { name: "Profil Tamamlandı", description: "Profilini eksiksiz doldurdun", icon: "✅", type: "profile_complete" },
+  first_connection: { name: "İlk Bağlantı", description: "İlk bağlantını kurdun", icon: "🤝", type: "first_connection" },
+  active_member: { name: "Aktif Üye", description: "10+ bağlantı kurdun", icon: "⭐", type: "active_member" },
+  network_builder: { name: "Ağ Kurucusu", description: "25+ bağlantı kurdun", icon: "🌐", type: "network_builder" },
+  communicator: { name: "İletişimci", description: "50+ mesaj gönderdin", icon: "💬", type: "communicator" },
+  rising_star: { name: "Yükselen Yıldız", description: "500+ puan topladın", icon: "🌟", type: "rising_star" },
+};
+
 export const gamificationService = {
   // Award points for activities
-  async awardPoints(activityType: string, points: number): Promise<{ error: any }> {
+  async awardPoints(actionType: string, points: number): Promise<{ error: any }> {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       
@@ -26,7 +42,7 @@ export const gamificationService = {
         .from("activity_points")
         .insert({
           user_id: user.id,
-          activity_type: activityType,
+          action_type: actionType,
           points,
         });
 
@@ -35,7 +51,7 @@ export const gamificationService = {
         await this.checkAndAwardBadges(user.id);
       }
 
-      console.log("Award points:", { activityType, points, error });
+      console.log("Award points:", { actionType, points, error });
       return { error };
     } catch (error: any) {
       console.error("Award points error:", error);
@@ -69,7 +85,7 @@ export const gamificationService = {
   },
 
   // Get user's earned badges
-  async getUserBadges(userId?: string): Promise<{ data: Badge[]; error: any }> {
+  async getUserBadges(userId?: string): Promise<{ data: BadgeDetails[]; error: any }> {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       const targetUserId = userId || user?.id;
@@ -79,21 +95,20 @@ export const gamificationService = {
       }
 
       const { data, error } = await supabase
-        .from("user_badges")
-        .select(`
-          earned_at,
-          badges (
-            id,
-            name,
-            description,
-            icon,
-            criteria
-          )
-        `)
+        .from("badges")
+        .select("*")
         .eq("user_id", targetUserId)
         .order("earned_at", { ascending: false });
 
-      const badges = data?.map((item: any) => item.badges).filter(Boolean) || [];
+      // Map to full details
+      const badges = data?.map((item: any) => ({
+        ...(BADGE_DICTIONARY[item.badge_type] || {
+          name: item.badge_name,
+          description: "Rozet kazanıldı",
+          icon: "🏆",
+          type: item.badge_type
+        }),
+      })) || [];
 
       console.log("Get user badges:", { userId: targetUserId, badges, error });
       return { data: badges, error };
@@ -104,19 +119,8 @@ export const gamificationService = {
   },
 
   // Get all available badges
-  async getAllBadges(): Promise<{ data: Badge[]; error: any }> {
-    try {
-      const { data, error } = await supabase
-        .from("badges")
-        .select("*")
-        .order("name");
-
-      console.log("Get all badges:", { data, error });
-      return { data: data || [], error };
-    } catch (error: any) {
-      console.error("Get all badges error:", error);
-      return { data: [], error };
-    }
+  async getAllBadges(): Promise<{ data: BadgeDetails[]; error: any }> {
+    return { data: Object.values(BADGE_DICTIONARY), error: null };
   },
 
   // Check and award badges based on user's achievements
@@ -180,8 +184,8 @@ export const gamificationService = {
       }
 
       // Award badges
-      for (const badgeCriteria of badgesToAward) {
-        await this.awardBadge(userId, badgeCriteria);
+      for (const badgeType of badgesToAward) {
+        await this.awardBadge(userId, badgeType);
       }
 
       return { error: null };
@@ -192,26 +196,18 @@ export const gamificationService = {
   },
 
   // Award a specific badge to user
-  async awardBadge(userId: string, badgeCriteria: string): Promise<{ error: any }> {
+  async awardBadge(userId: string, badgeType: string): Promise<{ error: any }> {
     try {
-      // Get badge by criteria
-      const { data: badge, error: badgeError } = await supabase
-        .from("badges")
-        .select("id")
-        .eq("criteria", badgeCriteria)
-        .single();
-
-      if (badgeError || !badge) {
-        return { error: badgeError || new Error("Rozet bulunamadı") };
-      }
+      const badgeDetails = BADGE_DICTIONARY[badgeType];
+      if (!badgeDetails) return { error: new Error("Rozet bulunamadı") };
 
       // Check if user already has this badge
       const { data: existing } = await supabase
-        .from("user_badges")
+        .from("badges")
         .select("id")
         .eq("user_id", userId)
-        .eq("badge_id", badge.id)
-        .single();
+        .eq("badge_type", badgeType)
+        .maybeSingle();
 
       if (existing) {
         return { error: null }; // Already has badge
@@ -219,13 +215,14 @@ export const gamificationService = {
 
       // Award badge
       const { error } = await supabase
-        .from("user_badges")
+        .from("badges")
         .insert({
           user_id: userId,
-          badge_id: badge.id,
+          badge_name: badgeDetails.name,
+          badge_type: badgeType,
         });
 
-      console.log("Award badge:", { userId, badgeCriteria, error });
+      console.log("Award badge:", { userId, badgeType, error });
       return { error };
     } catch (error: any) {
       console.error("Award badge error:", error);
