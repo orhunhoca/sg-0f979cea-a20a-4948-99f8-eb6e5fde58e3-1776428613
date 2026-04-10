@@ -11,7 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { getCurrentUser, signOut } from "@/services/authService";
+import { authService } from "@/services/authService";
 import { Users, MessageSquare, Calendar, Briefcase, Settings, LogOut, User } from "lucide-react";
 
 export function Navigation() {
@@ -23,12 +23,12 @@ export function Navigation() {
   }, []);
 
   const loadUser = async () => {
-    const currentUser = await getCurrentUser();
+    const currentUser = await authService.getCurrentUser();
     setUser(currentUser);
   };
 
   const handleSignOut = async () => {
-    await signOut();
+    await authService.signOut();
     router.push("/auth/login");
   };
 

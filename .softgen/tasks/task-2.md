@@ -1,6 +1,6 @@
 ---
 title: User Profiles & Directory
-status: todo
+status: in_progress
 priority: high
 type: feature
 tags: [profiles, search]
@@ -13,7 +13,7 @@ position: 2
 Kullanıcı profil sayfası ve mezun dizini. Profil: mezuniyet yılı, bölüm, meslek, şirket, şehir, bio, avatar. Arama ve filtreleme özellikleri.
 
 ## Checklist
-- [ ] profiles tablosu genişletme: graduation_year, department, profession, company, city, bio, avatar_url
+- [x] profiles tablosu genişletme: graduation_year, department, profession, company, city, bio, avatar_url
 - [ ] ProfilePage.tsx: profil görüntüleme, düzenleme formu
 - [ ] AlumniDirectory.tsx: mezun listesi, card layout
 - [ ] Search & Filter: graduation year, department, city, profession filtreler

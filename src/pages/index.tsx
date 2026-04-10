@@ -4,7 +4,7 @@ import { SEO } from "@/components/SEO";
 import { Navigation } from "@/components/Navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { getCurrentUser } from "@/services/authService";
+import { authService } from "@/services/authService";
 import { Users, MessageSquare, Trophy, TrendingUp, Calendar, Briefcase, Loader2 } from "lucide-react";
 import Link from "next/link";
 
@@ -18,7 +18,7 @@ export default function Home() {
   }, []);
 
   const checkAuth = async () => {
-    const currentUser = await getCurrentUser();
+    const currentUser = await authService.getCurrentUser();
     if (!currentUser) {
       router.push("/auth/login");
     } else {
