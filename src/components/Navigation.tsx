@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -40,8 +41,15 @@ export function Navigation() {
     <nav className="border-b bg-card">
       <div className="container flex h-16 items-center justify-between">
         <div className="flex items-center gap-8">
-          <Link href="/" className="text-xl font-heading font-bold text-primary">
-            Mezunlar Derneği
+          <Link href="/" className="flex items-center">
+            <Image 
+              src="/logo.jpg" 
+              alt="Eyüboğlu Eğitim Kurumları Mezunlar Derneği" 
+              width={180}
+              height={48}
+              className="h-12 w-auto"
+              priority
+            />
           </Link>
 
           <div className="hidden md:flex gap-6">
