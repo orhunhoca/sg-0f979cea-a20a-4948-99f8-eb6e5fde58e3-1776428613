@@ -1,29 +1,28 @@
 ---
 title: News Feed & Community Interactions
-status: todo
+status: done
 priority: medium
 type: feature
-tags: [feed, posts, social]
+tags: [feed, posts, interactions]
 created_by: agent
 created_at: 2026-04-11T18:14:44Z
 position: 9
 ---
 
 ## Notes
-Sosyal feed - duyurular, üye paylaşımları, etkileşim (beğeni, yorum).
+Haber akışı ve topluluk etkileşimleri - kullanıcılar gönderi paylaşabilir, beğenebilir, yorum yapabilir.
 
 Requirements:
-- Ana sayfa feed'i (duyurular + üye postları)
-- Post oluşturma (metin, fotoğraf, link)
+- Gönderi oluşturma (metin, görsel)
+- Gönderi tipi (duyuru, güncelleme, soru, paylaşım)
 - Beğeni ve yorum sistemi
-- Admin duyuruları (pinned posts)
-- Bildirimler (yeni yorum, beğeni)
+- Admin duyuru yetkisi
+- Ana sayfada feed görünümü
 
 ## Checklist
-- [ ] Create posts table with text, images, author
-- [ ] Create post_likes and post_comments tables
-- [ ] Create PostService with create, like, comment methods
-- [ ] Update index.tsx with news feed component
-- [ ] Create post composer (create new post)
-- [ ] Add like and comment interactions
-- [ ] Add admin announcement capability
+- [x] Create posts table with types
+- [x] Create post_likes and post_comments tables
+- [x] Update index.tsx with news feed
+- [x] Add post creation form
+- [x] Add like and comment interactions
+- [x] Add admin announcement capability
