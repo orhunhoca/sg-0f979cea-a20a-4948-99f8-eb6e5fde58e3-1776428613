@@ -28,6 +28,10 @@ export default function DirectoryPage() {
     profession: "",
     city: "",
   });
+  const [members, setMembers] = useState<any[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [yearFilter, setYearFilter] = useState("all");
+  const [cityFilter, setCityFilter] = useState("all");
 
   useEffect(() => {
     checkAuth();
@@ -126,17 +130,22 @@ export default function DirectoryPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="graduation_year">
-                    <GraduationCap className="h-4 w-4 inline mr-2" />
-                    Mezuniyet Yılı
-                  </Label>
-                  <Input
-                    id="graduation_year"
-                    type="number"
-                    placeholder="Örn: 2020"
-                    value={filters.graduation_year || ""}
-                    onChange={(e) => setFilters({ ...filters, graduation_year: parseInt(e.target.value) || undefined })}
-                  />
+                  <Label htmlFor="year-filter">Mezuniyet Yılı</Label>
+                  <Select value={yearFilter} onValueChange={setYearFilter}>
+                    <SelectTrigger id="year-filter">
+                      <SelectValue placeholder="Tüm yıllar" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Tümü</SelectItem>
+                      {Array.from({ length: 50 }, (_, i) => new Date().getFullYear() - i).map(
+                        (year) => (
+                          <SelectItem key={year} value={year.toString()}>
+                            {year}
+                          </SelectItem>
+                        )
+                      )}
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div className="space-y-2">
@@ -160,24 +169,18 @@ export default function DirectoryPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="city">
-                    <MapPin className="h-4 w-4 inline mr-2" />
-                    Şehir
-                  </Label>
-                  <Select
-                    value={filters.city}
-                    onValueChange={(value) => setFilters({ ...filters, city: value })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Şehir seçin" />
+                  <Label htmlFor="city-filter">Şehir</Label>
+                  <Select value={cityFilter} onValueChange={setCityFilter}>
+                    <SelectTrigger id="city-filter">
+                      <SelectValue placeholder="Tüm şehirler" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Tümü</SelectItem>
-                      {cities.map((city) => (
-                        <SelectItem key={city} value={city}>
-                          {city}
-                        </SelectItem>
-                      ))}
+                      <SelectItem value="all">Tümü</SelectItem>
+                      <SelectItem value="İstanbul">İstanbul</SelectItem>
+                      <SelectItem value="Ankara">Ankara</SelectItem>
+                      <SelectItem value="İzmir">İzmir</SelectItem>
+                      <SelectItem value="Bursa">Bursa</SelectItem>
+                      <SelectItem value="Antalya">Antalya</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
