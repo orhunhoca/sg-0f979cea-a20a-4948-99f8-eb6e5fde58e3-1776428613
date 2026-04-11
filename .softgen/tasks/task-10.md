@@ -1,6 +1,6 @@
 ---
 title: Groups & Forums
-status: in_progress
+status: done
 priority: medium
 type: feature
 tags: [groups, forums, discussions]
@@ -20,10 +20,10 @@ Requirements:
 - Admin moderasyonu
 
 ## Checklist
-- [ ] Create groups table with name, category, members
-- [ ] Create group_members and group_posts tables
-- [ ] Create GroupService with join, post methods
-- [ ] Create /groups page with group list
-- [ ] Create /groups/[id] page with discussions
-- [ ] Add group creation form
-- [ ] Enable group-specific posts and events
+- [x] Create groups table with name, category, members
+- [x] Create group_members and group_posts tables
+- [x] Create GroupService with join, post methods
+- [x] Create /groups page with group list
+- [x] Create /groups/[id] page with discussions
+- [x] Add group creation form
+- [x] Enable group-specific posts and events
