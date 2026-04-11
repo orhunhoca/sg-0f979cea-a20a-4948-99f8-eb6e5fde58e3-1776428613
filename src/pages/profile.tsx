@@ -52,8 +52,8 @@ export default function ProfilePage() {
   };
 
   const loadProfile = async (userId: string) => {
-    const data = await profileService.getProfile(userId);
-    if (data) {
+    const { data, error } = await profileService.getMyProfile();
+    if (!error && data) {
       setProfile(data);
       setFullName(data.full_name || "");
       setBio(data.bio || "");
@@ -91,7 +91,7 @@ export default function ProfilePage() {
       linkedin_url: linkedinUrl,
     };
 
-    const { error } = await profileService.updateProfile(user.id, updates);
+    const { error } = await profileService.updateMyProfile(updates);
 
     if (error) {
       toast({
