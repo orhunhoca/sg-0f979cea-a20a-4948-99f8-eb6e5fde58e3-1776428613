@@ -59,9 +59,14 @@ export function Navigation() {
             <Link href="/directory" className="text-sm font-medium hover:text-primary transition-colors">
               Üyeler
             </Link>
-            <Link href="/events" className="text-sm font-medium hover:text-primary transition-colors">
+            <a 
+              href="https://fonzip.com/eymeder/etkinlikler" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-sm font-medium hover:text-primary transition-colors"
+            >
               Etkinlikler
-            </Link>
+            </a>
             <Link href="/jobs" className="text-sm font-medium hover:text-primary transition-colors">
               İş İlanları
             </Link>
