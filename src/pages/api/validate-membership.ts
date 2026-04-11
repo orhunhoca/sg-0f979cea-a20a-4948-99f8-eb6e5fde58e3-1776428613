@@ -15,6 +15,10 @@ export default async function handler(
   const number = Array.isArray(numberParam) ? numberParam[0] : numberParam;
   const email = Array.isArray(emailParam) ? emailParam[0] : emailParam;
 
+  console.log("=== VALIDATION API CALLED ===");
+  console.log("Number:", number);
+  console.log("Email:", email);
+
   if (!number || !email) {
     return res.status(400).json({ 
       valid: false, 
@@ -30,17 +34,18 @@ export default async function handler(
       .eq("email", email)
       .maybeSingle();
 
-    console.log("Validation check:", { number, email, data, error });
+    console.log("Query result:", { data, error });
 
     if (error) {
-      console.error("Validation error:", error);
+      console.error("Database error:", error);
       return res.status(500).json({ 
         valid: false, 
-        message: "Sunucu hatası" 
+        message: `Sunucu hatası: ${error.message}` 
       });
     }
 
     if (!data) {
+      console.log("No matching record found");
       return res.status(200).json({ 
         valid: false, 
         message: "Üyelik numarası veya e-posta eşleşmiyor" 
@@ -48,21 +53,23 @@ export default async function handler(
     }
 
     if (data.is_used) {
+      console.log("Record already used");
       return res.status(200).json({ 
         valid: false, 
         message: "Bu üyelik numarası zaten kullanılmış" 
       });
     }
 
+    console.log("Validation successful!");
     return res.status(200).json({ 
       valid: true, 
       fullName: data.full_name 
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Unexpected error:", error);
     return res.status(500).json({ 
       valid: false, 
-      message: "Sunucu hatası" 
+      message: `Beklenmeyen hata: ${error.message}` 
     });
   }
 }
