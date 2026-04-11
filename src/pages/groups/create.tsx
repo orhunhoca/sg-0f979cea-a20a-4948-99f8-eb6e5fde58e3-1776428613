@@ -43,6 +43,7 @@ export default function CreateGroupPage() {
       description: description || null,
       category: category || null,
       is_private: isPrivate,
+      created_by: user.id,
     });
 
     if (error) {
