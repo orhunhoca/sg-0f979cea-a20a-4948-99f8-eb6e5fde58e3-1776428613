@@ -57,11 +57,11 @@ export function Navigation() {
             <Link href="/directory" className="text-sm font-medium hover:text-primary transition-colors">
               {t("nav.directory")}
             </Link>
+            <Link href="/events" className="text-sm font-medium hover:text-primary transition-colors">
+              {t("nav.events")}
+            </Link>
             <Link href="/messages" className="text-sm font-medium hover:text-primary transition-colors">
               {t("nav.messages")}
-            </Link>
-            <Link href="/fonzip-events" className="text-sm font-medium hover:text-primary transition-colors">
-              {t("nav.events")}
             </Link>
             <Link href="/fonzip-signup" className="text-sm font-medium hover:text-primary transition-colors">
               {t("nav.membership")}
