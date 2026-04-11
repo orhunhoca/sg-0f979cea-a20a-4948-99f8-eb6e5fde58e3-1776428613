@@ -12,12 +12,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { authService } from "@/services/authService";
-import { useLanguage } from "@/contexts/LanguageContext";
-import { Users, MessageSquare, Calendar, Briefcase, Settings, LogOut, User, Globe } from "lucide-react";
+import { Users, MessageSquare, Calendar, Briefcase, LogOut, User } from "lucide-react";
 
 export function Navigation() {
   const router = useRouter();
-  const { language, setLanguage, t } = useLanguage();
   const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
@@ -34,10 +32,6 @@ export function Navigation() {
     router.push("/auth/login");
   };
 
-  const toggleLanguage = () => {
-    setLanguage(language === "tr" ? "en" : "tr");
-  };
-
   if (!user) {
     return null;
   }
@@ -47,45 +41,35 @@ export function Navigation() {
       <div className="container flex h-16 items-center justify-between">
         <div className="flex items-center gap-8">
           <Link href="/" className="text-xl font-heading font-bold text-primary">
-            Mezunlar
+            Mezunlar Derneği
           </Link>
 
           <div className="hidden md:flex gap-6">
             <Link href="/" className="text-sm font-medium hover:text-primary transition-colors">
-              {t("nav.home")}
+              Ana Sayfa
             </Link>
             <Link href="/directory" className="text-sm font-medium hover:text-primary transition-colors">
-              {t("nav.directory")}
+              Üyeler
             </Link>
             <Link href="/events" className="text-sm font-medium hover:text-primary transition-colors">
-              {t("nav.events")}
+              Etkinlikler
             </Link>
             <Link href="/jobs" className="text-sm font-medium hover:text-primary transition-colors">
-              {t("nav.jobs")}
+              İş İlanları
             </Link>
             <Link href="/messages" className="text-sm font-medium hover:text-primary transition-colors">
-              {t("nav.messages")}
+              Mesajlar
             </Link>
             <Link href="/fonzip-signup" className="text-sm font-medium hover:text-primary transition-colors">
-              {t("nav.membership")}
+              Üyelik
             </Link>
             <Link href="/admin" className="text-sm font-medium hover:text-primary transition-colors">
-              {t("nav.admin")}
+              Admin
             </Link>
           </div>
         </div>
 
         <div className="flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={toggleLanguage}
-            className="gap-2"
-          >
-            <Globe className="h-4 w-4" />
-            {language.toUpperCase()}
-          </Button>
-
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="relative h-10 w-10 rounded-full">
@@ -102,12 +86,12 @@ export function Navigation() {
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => router.push("/profile")}>
                 <User className="mr-2 h-4 w-4" />
-                {t("nav.profile")}
+                Profilim
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handleSignOut}>
                 <LogOut className="mr-2 h-4 w-4" />
-                {t("nav.signout")}
+                Çıkış Yap
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
