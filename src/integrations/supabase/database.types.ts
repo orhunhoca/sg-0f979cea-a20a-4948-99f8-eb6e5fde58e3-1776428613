@@ -564,6 +564,51 @@ export type Database = {
           },
         ]
       }
+      mentorship_requests: {
+        Row: {
+          created_at: string | null
+          id: string
+          mentee_id: string
+          mentor_id: string
+          message: string
+          status: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          mentee_id: string
+          mentor_id: string
+          message: string
+          status?: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          mentee_id?: string
+          mentor_id?: string
+          message?: string
+          status?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mentorship_requests_mentee_id_fkey"
+            columns: ["mentee_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mentorship_requests_mentor_id_fkey"
+            columns: ["mentor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       messages: {
         Row: {
           content: string
@@ -734,8 +779,11 @@ export type Database = {
           full_name: string | null
           graduation_year: number | null
           id: string
+          is_mentor: boolean | null
           linkedin_url: string | null
           membership_number: string | null
+          mentor_bio: string | null
+          mentorship_areas: string[] | null
           phone: string | null
           profession: string | null
           updated_at: string | null
@@ -751,8 +799,11 @@ export type Database = {
           full_name?: string | null
           graduation_year?: number | null
           id: string
+          is_mentor?: boolean | null
           linkedin_url?: string | null
           membership_number?: string | null
+          mentor_bio?: string | null
+          mentorship_areas?: string[] | null
           phone?: string | null
           profession?: string | null
           updated_at?: string | null
@@ -768,8 +819,11 @@ export type Database = {
           full_name?: string | null
           graduation_year?: number | null
           id?: string
+          is_mentor?: boolean | null
           linkedin_url?: string | null
           membership_number?: string | null
+          mentor_bio?: string | null
+          mentorship_areas?: string[] | null
           phone?: string | null
           profession?: string | null
           updated_at?: string | null
