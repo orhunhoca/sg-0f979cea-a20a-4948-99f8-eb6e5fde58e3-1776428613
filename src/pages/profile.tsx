@@ -14,6 +14,7 @@ import { profileService } from "@/services/profileService";
 import { gamificationService } from "@/services/gamificationService";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Upload, Trophy, Star, Award } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -241,15 +242,20 @@ export default function ProfilePage() {
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-2">
                     <Label htmlFor="graduation_year">Mezuniyet Yılı</Label>
-                    <Input
-                      id="graduation_year"
-                      type="number"
-                      placeholder="Örn: 2020"
-                      min="1950"
-                      max={new Date().getFullYear()}
-                      value={graduationYear}
-                      onChange={(e) => setGraduationYear(e.target.value)}
-                    />
+                    <Select value={graduationYear} onValueChange={setGraduationYear}>
+                      <SelectTrigger id="graduation_year">
+                        <SelectValue placeholder="Seçin" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Array.from({ length: 60 }, (_, i) => new Date().getFullYear() - i).map(
+                          (year) => (
+                            <SelectItem key={year} value={year.toString()}>
+                              {year}
+                            </SelectItem>
+                          )
+                        )}
+                      </SelectContent>
+                    </Select>
                   </div>
 
                   <div className="space-y-2">
@@ -288,12 +294,23 @@ export default function ProfilePage() {
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-2">
                     <Label htmlFor="city">Şehir</Label>
-                    <Input
-                      id="city"
-                      placeholder="Örn: İstanbul"
-                      value={city}
-                      onChange={(e) => setCity(e.target.value)}
-                    />
+                    <Select value={city} onValueChange={setCity}>
+                      <SelectTrigger id="city">
+                        <SelectValue placeholder="Seçin" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="İstanbul">İstanbul</SelectItem>
+                        <SelectItem value="Ankara">Ankara</SelectItem>
+                        <SelectItem value="İzmir">İzmir</SelectItem>
+                        <SelectItem value="Bursa">Bursa</SelectItem>
+                        <SelectItem value="Antalya">Antalya</SelectItem>
+                        <SelectItem value="Adana">Adana</SelectItem>
+                        <SelectItem value="Konya">Konya</SelectItem>
+                        <SelectItem value="Gaziantep">Gaziantep</SelectItem>
+                        <SelectItem value="Kayseri">Kayseri</SelectItem>
+                        <SelectItem value="Diğer">Diğer</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
 
                   <div className="space-y-2">
