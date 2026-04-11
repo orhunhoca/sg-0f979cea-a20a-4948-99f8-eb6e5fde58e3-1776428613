@@ -23,9 +23,9 @@ Requirements:
 ## Checklist
 - [x] Create events table with RLS policies
 - [x] Create event_attendees table for RSVP tracking
-- [ ] Create EventService with CRUD operations
-- [ ] Create /events page with event list and filters
+- [x] Create EventService with CRUD operations
+- [x] Create /events page with event list and filters
 - [ ] Create /events/create page with form
 - [ ] Create /events/[id] detail page with RSVP
 - [ ] Add calendar view component
-- [ ] Update navigation to include Events link
+- [x] Update navigation to include Events link

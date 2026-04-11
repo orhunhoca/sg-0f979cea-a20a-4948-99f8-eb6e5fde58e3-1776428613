@@ -1,0 +1,181 @@
+import { useState } from "react";
+import { useRouter } from "next/router";
+import { SEO } from "@/components/SEO";
+import { Navigation } from "@/components/Navigation";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { eventService } from "@/services/eventService";
+import { useToast } from "@/hooks/use-toast";
+import { Loader2, Calendar, MapPin, Users } from "lucide-react";
+
+export default function CreateEventPage() {
+  const router = useRouter();
+  const { toast } = useToast();
+  const [creating, setCreating] = useState(false);
+
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [eventDate, setEventDate] = useState("");
+  const [eventTime, setEventTime] = useState("");
+  const [location, setLocation] = useState("");
+  const [capacity, setCapacity] = useState("");
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setCreating(true);
+
+    const dateTime = `${eventDate}T${eventTime}:00`;
+
+    const { data, error } = await eventService.createEvent({
+      title,
+      description: description || null,
+      event_date: dateTime,
+      location: location || null,
+      capacity: capacity ? parseInt(capacity) : null,
+      is_approved: true,
+    });
+
+    if (error) {
+      toast({
+        title: "Hata",
+        description: "Etkinlik oluşturulamadı",
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Başarılı",
+        description: "Etkinlik oluşturuldu",
+      });
+      router.push(`/events/${data.id}`);
+    }
+
+    setCreating(false);
+  };
+
+  return (
+    <>
+      <SEO 
+        title="Etkinlik Oluştur - Mezunlar Derneği"
+        description="Yeni etkinlik oluşturun"
+      />
+      
+      <div className="min-h-screen bg-background">
+        <Navigation />
+
+        <main className="container py-8">
+          <div className="max-w-2xl mx-auto">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-2xl font-heading">Yeni Etkinlik Oluştur</CardTitle>
+                <CardDescription>
+                  Mezunlar için etkinlik düzenleyin
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleSubmit} className="space-y-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="title">Etkinlik Adı *</Label>
+                    <Input
+                      id="title"
+                      placeholder="Örn: Yıllık Mezunlar Buluşması 2026"
+                      value={title}
+                      onChange={(e) => setTitle(e.target.value)}
+                      required
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="description">Açıklama</Label>
+                    <Textarea
+                      id="description"
+                      placeholder="Etkinlik hakkında detaylı bilgi..."
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                      rows={5}
+                    />
+                  </div>
+
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label htmlFor="date">Tarih *</Label>
+                      <Input
+                        id="date"
+                        type="date"
+                        value={eventDate}
+                        onChange={(e) => setEventDate(e.target.value)}
+                        required
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="time">Saat *</Label>
+                      <Input
+                        id="time"
+                        type="time"
+                        value={eventTime}
+                        onChange={(e) => setEventTime(e.target.value)}
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="location">Konum</Label>
+                    <div className="relative">
+                      <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        id="location"
+                        placeholder="Örn: Hilton Oteli, İstanbul"
+                        value={location}
+                        onChange={(e) => setLocation(e.target.value)}
+                        className="pl-9"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="capacity">Kapasite (Opsiyonel)</Label>
+                    <div className="relative">
+                      <Users className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        id="capacity"
+                        type="number"
+                        placeholder="Maksimum katılımcı sayısı"
+                        value={capacity}
+                        onChange={(e) => setCapacity(e.target.value)}
+                        className="pl-9"
+                        min="1"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex gap-3">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => router.back()}
+                      className="flex-1"
+                    >
+                      İptal
+                    </Button>
+                    <Button
+                      type="submit"
+                      disabled={creating}
+                      className="flex-1"
+                    >
+                      {creating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                      Etkinlik Oluştur
+                    </Button>
+                  </div>
+                </form>
+              </CardContent>
+            </Card>
+          </div>
+        </main>
+      </div>
+    </>
+  );
+}
