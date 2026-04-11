@@ -14,6 +14,7 @@ import { profileService, type ProfileUpdate } from "@/services/profileService";
 import { gamificationService } from "@/services/gamificationService";
 import { Loader2, Upload, Save, User, Briefcase, MapPin, GraduationCap, Trophy, Award } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -272,23 +273,31 @@ export default function ProfilePage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="graduation_year">
-                      <GraduationCap className="h-4 w-4 inline mr-2" />
-                      Mezuniyet Yılı
-                    </Label>
-                    <Input
-                      id="graduation_year"
-                      type="number"
-                      value={formData.graduation_year || ""}
-                      onChange={(e) => setFormData({ ...formData, graduation_year: parseInt(e.target.value) || undefined })}
-                      disabled={!editing}
-                    />
+                    <Label htmlFor="graduation_year">Mezuniyet Yılı</Label>
+                    <Select
+                      value={formData.graduation_year?.toString() || ""}
+                      onValueChange={(value) => setFormData({ ...formData, graduation_year: parseInt(value) || undefined })}
+                    >
+                      <SelectTrigger id="graduation_year">
+                        <SelectValue placeholder="Yıl seçin" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Array.from({ length: 50 }, (_, i) => new Date().getFullYear() - i).map(
+                          (year) => (
+                            <SelectItem key={year} value={year.toString()}>
+                              {year}
+                            </SelectItem>
+                          )
+                        )}
+                      </SelectContent>
+                    </Select>
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="department">Bölüm</Label>
                     <Input
                       id="department"
+                      placeholder="Örn: Bilgisayar Mühendisliği"
                       value={formData.department}
                       onChange={(e) => setFormData({ ...formData, department: e.target.value })}
                       disabled={!editing}
@@ -296,12 +305,10 @@ export default function ProfilePage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="profession">
-                      <Briefcase className="h-4 w-4 inline mr-2" />
-                      Meslek
-                    </Label>
+                    <Label htmlFor="profession">Meslek</Label>
                     <Input
                       id="profession"
+                      placeholder="Örn: Yazılım Geliştirici"
                       value={formData.profession}
                       onChange={(e) => setFormData({ ...formData, profession: e.target.value })}
                       disabled={!editing}
@@ -309,9 +316,10 @@ export default function ProfilePage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="company">Şirket</Label>
+                    <Label htmlFor="company">Şirket (Opsiyonel)</Label>
                     <Input
                       id="company"
+                      placeholder="Örn: ABC Teknoloji"
                       value={formData.company}
                       onChange={(e) => setFormData({ ...formData, company: e.target.value })}
                       disabled={!editing}
@@ -319,12 +327,10 @@ export default function ProfilePage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="city">
-                      <MapPin className="h-4 w-4 inline mr-2" />
-                      Şehir
-                    </Label>
+                    <Label htmlFor="city">Şehir</Label>
                     <Input
                       id="city"
+                      placeholder="Örn: İstanbul"
                       value={formData.city}
                       onChange={(e) => setFormData({ ...formData, city: e.target.value })}
                       disabled={!editing}
