@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { eventService } from "@/services/eventService";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Calendar, MapPin, Users } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export default function CreateEventPage() {
   const router = useRouter();
@@ -22,6 +23,7 @@ export default function CreateEventPage() {
   const [eventTime, setEventTime] = useState("");
   const [location, setLocation] = useState("");
   const [capacity, setCapacity] = useState("");
+  const [eventType, setEventType] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -150,6 +152,22 @@ export default function CreateEventPage() {
                         min="1"
                       />
                     </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="event_type">Etkinlik Tipi</Label>
+                    <Select value={eventType} onValueChange={setEventType}>
+                      <SelectTrigger id="event_type">
+                        <SelectValue placeholder="Seçin" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="meetup">Buluşma</SelectItem>
+                        <SelectItem value="seminar">Seminer</SelectItem>
+                        <SelectItem value="webinar">Webinar</SelectItem>
+                        <SelectItem value="workshop">Workshop</SelectItem>
+                        <SelectItem value="social">Sosyal Etkinlik</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
 
                   <div className="flex gap-3">
