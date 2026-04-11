@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { SEO } from "@/components/SEO";
 import { Navigation } from "@/components/Navigation";
@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { jobService } from "@/services/jobService";
+import { authService } from "@/services/authService";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Briefcase } from "lucide-react";
 
@@ -16,6 +17,14 @@ export default function CreateJobPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [creating, setCreating] = useState(false);
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    authService.getCurrentUser().then((u) => {
+      if (!u) router.push("/auth/login");
+      else setUser(u);
+    });
+  }, [router]);
 
   const [title, setTitle] = useState("");
   const [company, setCompany] = useState("");
@@ -29,6 +38,8 @@ export default function CreateJobPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!user) return;
+    
     setCreating(true);
 
     const { data, error } = await jobService.createJob({
@@ -41,6 +52,7 @@ export default function CreateJobPage() {
       description,
       requirements: requirements || null,
       benefits: benefits || null,
+      posted_by: user.id,
     });
 
     if (error) {
