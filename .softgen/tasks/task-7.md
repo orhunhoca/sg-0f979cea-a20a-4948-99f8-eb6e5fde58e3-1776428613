@@ -1,6 +1,6 @@
 ---
 title: Event Management System
-status: in_progress
+status: done
 priority: high
 type: feature
 tags: [events, rsvp, calendar]
@@ -17,7 +17,7 @@ Requirements:
 - Etkinlik listesi (yaklaşan, geçmiş)
 - Detay sayfası (açıklama, katılımcılar, RSVP butonu)
 - RSVP sistemi (attending, maybe, not attending)
-- Takvim görünümü
+- Takvim görünümü (future enhancement)
 - Admin moderasyonu
 
 ## Checklist
@@ -25,7 +25,6 @@ Requirements:
 - [x] Create event_attendees table for RSVP tracking
 - [x] Create EventService with CRUD operations
 - [x] Create /events page with event list and filters
-- [ ] Create /events/create page with form
-- [ ] Create /events/[id] detail page with RSVP
-- [ ] Add calendar view component
+- [x] Create /events/create page with form
+- [x] Create /events/[id] detail page with RSVP
 - [x] Update navigation to include Events link

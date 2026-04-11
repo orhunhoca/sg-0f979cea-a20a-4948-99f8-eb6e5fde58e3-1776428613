@@ -1,9 +1,9 @@
 ---
 title: Job Board & Referral System
-status: todo
+status: in_progress
 priority: high
 type: feature
-tags: [jobs, careers, referrals]
+tags: [jobs, career, referrals]
 created_by: agent
 created_at: 2026-04-11T18:14:44Z
 position: 8

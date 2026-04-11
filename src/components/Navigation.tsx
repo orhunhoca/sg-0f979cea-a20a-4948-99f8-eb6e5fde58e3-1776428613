@@ -60,6 +60,9 @@ export function Navigation() {
             <Link href="/events" className="text-sm font-medium hover:text-primary transition-colors">
               {t("nav.events")}
             </Link>
+            <Link href="/jobs" className="text-sm font-medium hover:text-primary transition-colors">
+              {t("nav.jobs")}
+            </Link>
             <Link href="/messages" className="text-sm font-medium hover:text-primary transition-colors">
               {t("nav.messages")}
             </Link>
