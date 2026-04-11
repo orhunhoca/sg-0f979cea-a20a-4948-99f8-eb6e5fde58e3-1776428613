@@ -65,6 +65,9 @@ export function Navigation() {
             <Link href="/jobs" className="text-sm font-medium hover:text-primary transition-colors">
               İş İlanları
             </Link>
+            <Link href="/groups" className="text-sm font-medium hover:text-primary transition-colors">
+              Gruplar
+            </Link>
             <Link href="/messages" className="text-sm font-medium hover:text-primary transition-colors">
               Mesajlar
             </Link>
