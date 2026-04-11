@@ -10,111 +10,104 @@ import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { authService } from "@/services/authService";
-import { profileService, type ProfileUpdate } from "@/services/profileService";
+import { profileService } from "@/services/profileService";
 import { gamificationService } from "@/services/gamificationService";
-import { Loader2, Upload, Save, User, Briefcase, MapPin, GraduationCap, Trophy, Award } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Loader2, Upload, Trophy, Star, Award } from "lucide-react";
 
 export default function ProfilePage() {
   const router = useRouter();
   const { toast } = useToast();
   const [user, setUser] = useState<any>(null);
+  const [profile, setProfile] = useState<any>(null);
+  const [gamification, setGamification] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [editing, setEditing] = useState(false);
-  const [userStats, setUserStats] = useState<any>(null);
-  const [formData, setFormData] = useState<ProfileUpdate>({
-    full_name: "",
-    phone: "",
-    graduation_year: undefined,
-    department: "",
-    profession: "",
-    company: "",
-    city: "",
-    bio: "",
-  });
+
+  // Form fields
+  const [fullName, setFullName] = useState("");
+  const [bio, setBio] = useState("");
+  const [graduationYear, setGraduationYear] = useState("");
+  const [department, setDepartment] = useState("");
+  const [profession, setProfession] = useState("");
+  const [company, setCompany] = useState("");
+  const [city, setCity] = useState("");
+  const [phone, setPhone] = useState("");
+  const [linkedinUrl, setLinkedinUrl] = useState("");
 
   useEffect(() => {
-    loadProfile();
+    checkAuth();
   }, []);
 
-  const loadProfile = async () => {
+  const checkAuth = async () => {
     const currentUser = await authService.getCurrentUser();
     if (!currentUser) {
       router.push("/auth/login");
-      return;
+    } else {
+      setUser(currentUser);
+      await loadProfile(currentUser.id);
+      await loadGamification(currentUser.id);
+      setLoading(false);
     }
-    setUser(currentUser);
+  };
 
-    const [profileResult, statsResult] = await Promise.all([
-      profileService.getMyProfile(),
-      gamificationService.getUserStats(),
-    ]);
-
-    if (profileResult.data) {
-      setFormData({
-        full_name: profileResult.data.full_name || "",
-        phone: profileResult.data.phone || "",
-        graduation_year: profileResult.data.graduation_year || undefined,
-        department: profileResult.data.department || "",
-        profession: profileResult.data.profession || "",
-        company: profileResult.data.company || "",
-        city: profileResult.data.city || "",
-        bio: profileResult.data.bio || "",
-      });
+  const loadProfile = async (userId: string) => {
+    const data = await profileService.getProfile(userId);
+    if (data) {
+      setProfile(data);
+      setFullName(data.full_name || "");
+      setBio(data.bio || "");
+      setGraduationYear(data.graduation_year?.toString() || "");
+      setDepartment(data.department || "");
+      setProfession(data.profession || "");
+      setCompany(data.company || "");
+      setCity(data.city || "");
+      setPhone(data.phone || "");
+      setLinkedinUrl(data.linkedin_url || "");
     }
+  };
 
-    if (statsResult.data) {
-      setUserStats(statsResult.data);
+  const loadGamification = async (userId: string) => {
+    const data = await gamificationService.getUserStats(userId);
+    if (data) {
+      setGamification(data);
     }
-
-    setLoading(false);
   };
 
   const handleSave = async () => {
+    if (!user) return;
+
     setSaving(true);
-    const { error } = await profileService.updateMyProfile(formData);
-    
+
+    const updates = {
+      full_name: fullName,
+      bio,
+      graduation_year: graduationYear ? parseInt(graduationYear) : null,
+      department,
+      profession,
+      company,
+      city,
+      phone,
+      linkedin_url: linkedinUrl,
+    };
+
+    const { error } = await profileService.updateProfile(user.id, updates);
+
     if (error) {
       toast({
         title: "Hata",
-        description: "Profil güncellenemedi. Lütfen tekrar deneyin.",
+        description: "Profil güncellenemedi",
         variant: "destructive",
       });
     } else {
-      // Award points for profile update
-      await gamificationService.awardPoints("profile_update", 10);
-      
       toast({
         title: "Başarılı",
-        description: "Profiliniz güncellendi.",
+        description: "Profiliniz güncellendi",
       });
-      setEditing(false);
-      loadProfile();
+      await loadProfile(user.id);
     }
+
     setSaving(false);
-  };
-
-  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const { error } = await profileService.uploadAvatar(file);
-    
-    if (error) {
-      toast({
-        title: "Hata",
-        description: "Profil fotoğrafı yüklenemedi.",
-        variant: "destructive",
-      });
-    } else {
-      toast({
-        title: "Başarılı",
-        description: "Profil fotoğrafınız güncellendi.",
-      });
-      loadProfile();
-    }
   };
 
   if (loading) {
@@ -129,83 +122,71 @@ export default function ProfilePage() {
     <>
       <SEO 
         title="Profilim - Mezunlar Derneği"
-        description="Profil bilgilerinizi görüntüleyin ve güncelleyin"
+        description="Profil bilgilerinizi düzenleyin"
       />
       
       <div className="min-h-screen bg-background">
         <Navigation />
 
         <main className="container py-8">
-          <div className="max-w-3xl mx-auto space-y-6">
-            <div className="flex items-center justify-between">
-              <h1 className="text-3xl font-heading font-bold">Profilim</h1>
-              {!editing && (
-                <Button onClick={() => setEditing(true)}>
-                  Profili Düzenle
-                </Button>
-              )}
-            </div>
+          <div className="max-w-4xl mx-auto space-y-6">
+            {/* Header with Avatar */}
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex items-start gap-6">
+                  <Avatar className="h-24 w-24">
+                    <AvatarImage src={profile?.avatar_url} />
+                    <AvatarFallback className="text-2xl font-semibold">
+                      {fullName ? fullName[0].toUpperCase() : "?"}
+                    </AvatarFallback>
+                  </Avatar>
 
-            {/* Gamification Stats */}
-            {userStats && (
-              <Card className="bg-gradient-to-r from-primary/10 to-accent/10 border-primary/20">
-                <CardContent className="pt-6">
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div className="text-center">
-                      <div className="flex items-center justify-center mb-2">
-                        <Trophy className="h-6 w-6 text-accent" />
-                      </div>
-                      <div className="text-2xl font-heading font-bold text-primary">
-                        {userStats.totalPoints}
-                      </div>
-                      <div className="text-sm text-muted-foreground">Toplam Puan</div>
+                  <div className="flex-1 space-y-3">
+                    <div>
+                      <h1 className="text-2xl font-heading font-bold">{fullName || "İsimsiz Kullanıcı"}</h1>
+                      <p className="text-muted-foreground">{profession || "Meslek belirtilmemiş"}</p>
+                      {company && <p className="text-sm text-muted-foreground">{company}</p>}
                     </div>
-                    <div className="text-center">
-                      <div className="flex items-center justify-center mb-2">
-                        <Award className="h-6 w-6 text-accent" />
+
+                    {gamification && (
+                      <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-2">
+                          <Trophy className="h-4 w-4 text-accent" />
+                          <span className="text-sm font-medium">{gamification.points} Puan</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Star className="h-4 w-4 text-primary" />
+                          <span className="text-sm font-medium">Seviye {gamification.level}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Award className="h-4 w-4 text-destructive" />
+                          <span className="text-sm font-medium">{gamification.badges?.length || 0} Rozet</span>
+                        </div>
                       </div>
-                      <div className="text-2xl font-heading font-bold text-primary">
-                        {userStats.earnedBadges.length}
-                      </div>
-                      <div className="text-sm text-muted-foreground">Rozet</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="flex items-center justify-center mb-2">
-                        <span className="text-2xl">📊</span>
-                      </div>
-                      <div className="text-2xl font-heading font-bold text-primary">
-                        Seviye {userStats.level}
-                      </div>
-                      <div className="text-sm text-muted-foreground">Seviye</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="flex items-center justify-center mb-2">
-                        <span className="text-2xl">🏆</span>
-                      </div>
-                      <div className="text-2xl font-heading font-bold text-primary">
-                        {userStats.rank}
-                      </div>
-                      <div className="text-sm text-muted-foreground">Rütbe</div>
-                    </div>
+                    )}
                   </div>
-                </CardContent>
-              </Card>
-            )}
 
-            {/* Earned Badges */}
-            {userStats && userStats.earnedBadges.length > 0 && (
+                  <Button variant="outline" size="sm">
+                    <Upload className="mr-2 h-4 w-4" />
+                    Fotoğraf Yükle
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Badges */}
+            {gamification?.badges && gamification.badges.length > 0 && (
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Award className="h-5 w-5" />
-                    Kazanılan Rozetler
+                    Rozetlerim
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="flex flex-wrap gap-3">
-                    {userStats.earnedBadges.map((badge: any) => (
-                      <Badge key={badge.id} variant="secondary" className="text-sm py-2 px-3">
-                        <span className="mr-2">{badge.icon}</span>
+                  <div className="flex flex-wrap gap-2">
+                    {gamification.badges.map((badge: any, index: number) => (
+                      <Badge key={index} variant="secondary" className="px-3 py-1">
                         {badge.name}
                       </Badge>
                     ))}
@@ -214,51 +195,23 @@ export default function ProfilePage() {
               </Card>
             )}
 
-            {/* Profile Card */}
+            {/* Profile Edit Form */}
             <Card>
               <CardHeader>
-                <div className="flex items-center gap-6">
-                  <div className="relative">
-                    <Avatar className="h-24 w-24">
-                      <AvatarImage src={formData.avatar_url} alt={formData.full_name} />
-                      <AvatarFallback className="bg-primary text-primary-foreground text-2xl">
-                        {formData.full_name?.charAt(0) || "U"}
-                      </AvatarFallback>
-                    </Avatar>
-                    {editing && (
-                      <Label htmlFor="avatar-upload" className="absolute bottom-0 right-0 cursor-pointer">
-                        <div className="h-8 w-8 rounded-full bg-accent text-accent-foreground flex items-center justify-center">
-                          <Upload className="h-4 w-4" />
-                        </div>
-                        <Input
-                          id="avatar-upload"
-                          type="file"
-                          accept="image/*"
-                          className="hidden"
-                          onChange={handleAvatarUpload}
-                        />
-                      </Label>
-                    )}
-                  </div>
-                  <div>
-                    <CardTitle className="text-2xl">{formData.full_name}</CardTitle>
-                    <CardDescription>{user?.email}</CardDescription>
-                  </div>
-                </div>
+                <CardTitle>Profil Bilgileri</CardTitle>
+                <CardDescription>
+                  Bilgilerinizi güncelleyerek diğer mezunların sizi bulmasını kolaylaştırın
+                </CardDescription>
               </CardHeader>
-
-              <CardContent className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <CardContent className="space-y-4">
+                <div className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-2">
-                    <Label htmlFor="full_name">
-                      <User className="h-4 w-4 inline mr-2" />
-                      Ad Soyad
-                    </Label>
+                    <Label htmlFor="full_name">Ad Soyad *</Label>
                     <Input
                       id="full_name"
-                      value={formData.full_name}
-                      onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
-                      disabled={!editing}
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      required
                     />
                   </div>
 
@@ -266,31 +219,37 @@ export default function ProfilePage() {
                     <Label htmlFor="phone">Telefon</Label>
                     <Input
                       id="phone"
-                      value={formData.phone}
-                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                      disabled={!editing}
+                      type="tel"
+                      placeholder="+90 555 123 45 67"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
                     />
                   </div>
+                </div>
 
+                <div className="space-y-2">
+                  <Label htmlFor="bio">Biyografi</Label>
+                  <Textarea
+                    id="bio"
+                    placeholder="Kendiniz hakkında kısa bir açıklama yazın..."
+                    value={bio}
+                    onChange={(e) => setBio(e.target.value)}
+                    rows={4}
+                  />
+                </div>
+
+                <div className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-2">
                     <Label htmlFor="graduation_year">Mezuniyet Yılı</Label>
-                    <Select
-                      value={formData.graduation_year?.toString() || ""}
-                      onValueChange={(value) => setFormData({ ...formData, graduation_year: parseInt(value) || undefined })}
-                    >
-                      <SelectTrigger id="graduation_year">
-                        <SelectValue placeholder="Yıl seçin" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {Array.from({ length: 50 }, (_, i) => new Date().getFullYear() - i).map(
-                          (year) => (
-                            <SelectItem key={year} value={year.toString()}>
-                              {year}
-                            </SelectItem>
-                          )
-                        )}
-                      </SelectContent>
-                    </Select>
+                    <Input
+                      id="graduation_year"
+                      type="number"
+                      placeholder="Örn: 2020"
+                      min="1950"
+                      max={new Date().getFullYear()}
+                      value={graduationYear}
+                      onChange={(e) => setGraduationYear(e.target.value)}
+                    />
                   </div>
 
                   <div className="space-y-2">
@@ -298,81 +257,66 @@ export default function ProfilePage() {
                     <Input
                       id="department"
                       placeholder="Örn: Bilgisayar Mühendisliği"
-                      value={formData.department}
-                      onChange={(e) => setFormData({ ...formData, department: e.target.value })}
-                      disabled={!editing}
+                      value={department}
+                      onChange={(e) => setDepartment(e.target.value)}
                     />
                   </div>
+                </div>
 
+                <div className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-2">
                     <Label htmlFor="profession">Meslek</Label>
                     <Input
                       id="profession"
                       placeholder="Örn: Yazılım Geliştirici"
-                      value={formData.profession}
-                      onChange={(e) => setFormData({ ...formData, profession: e.target.value })}
-                      disabled={!editing}
+                      value={profession}
+                      onChange={(e) => setProfession(e.target.value)}
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="company">Şirket (Opsiyonel)</Label>
+                    <Label htmlFor="company">Şirket</Label>
                     <Input
                       id="company"
                       placeholder="Örn: ABC Teknoloji"
-                      value={formData.company}
-                      onChange={(e) => setFormData({ ...formData, company: e.target.value })}
-                      disabled={!editing}
+                      value={company}
+                      onChange={(e) => setCompany(e.target.value)}
                     />
                   </div>
+                </div>
 
+                <div className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-2">
                     <Label htmlFor="city">Şehir</Label>
                     <Input
                       id="city"
                       placeholder="Örn: İstanbul"
-                      value={formData.city}
-                      onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                      disabled={!editing}
+                      value={city}
+                      onChange={(e) => setCity(e.target.value)}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="linkedin">LinkedIn Profili</Label>
+                    <Input
+                      id="linkedin"
+                      type="url"
+                      placeholder="https://linkedin.com/in/..."
+                      value={linkedinUrl}
+                      onChange={(e) => setLinkedinUrl(e.target.value)}
                     />
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="bio">Hakkımda</Label>
-                  <Textarea
-                    id="bio"
-                    value={formData.bio}
-                    onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-                    disabled={!editing}
-                    rows={4}
-                    placeholder="Kendinizi tanıtın..."
-                  />
+                <div className="flex justify-end gap-2 pt-4">
+                  <Button variant="outline" onClick={() => router.push("/")}>
+                    İptal
+                  </Button>
+                  <Button onClick={handleSave} disabled={saving}>
+                    {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    Kaydet
+                  </Button>
                 </div>
-
-                {editing && (
-                  <div className="flex gap-3 justify-end">
-                    <Button variant="outline" onClick={() => {
-                      setEditing(false);
-                      loadProfile();
-                    }}>
-                      İptal
-                    </Button>
-                    <Button onClick={handleSave} disabled={saving}>
-                      {saving ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Kaydediliyor...
-                        </>
-                      ) : (
-                        <>
-                          <Save className="mr-2 h-4 w-4" />
-                          Kaydet
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                )}
               </CardContent>
             </Card>
           </div>
