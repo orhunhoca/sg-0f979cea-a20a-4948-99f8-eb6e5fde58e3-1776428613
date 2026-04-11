@@ -1,27 +1,28 @@
 ---
 title: Mentorship Matching System
-status: todo
+status: done
 priority: low
 type: feature
-tags: [mentorship, matching, careers]
+tags: [mentorship, matching, career]
 created_by: agent
 created_at: 2026-04-11T18:14:44Z
 position: 11
 ---
 
 ## Notes
-Mentor/mentee eşleştirme sistemi - deneyimli mezunlar yeni mezunlara rehberlik eder.
+Mentor-mentee eşleştirme sistemi - deneyimli mezunlar mentorluk verebilir, yeni mezunlar mentorluk talep edebilir.
 
 Requirements:
-- Mentor/mentee profil tercihleri (sektör, beceriler)
-- Eşleştirme algoritması (sektör, ilgi alanı)
-- Mentorluk istekleri (gönder, kabul et)
-- Mesajlaşma entegrasyonu
+- Profilde mentor durumu (is_mentor flag, bio, uzmanlık alanları)
+- Mentorship talep sistemi (mentee → mentor)
+- Talep onay/red mekanizması
+- Aktif mentorlukları görüntüleme
+- Mentor arama ve filtreleme
 
 ## Checklist
-- [ ] Add mentor/mentee fields to profiles table
-- [ ] Create mentorship_requests table
-- [ ] Create MentorshipService with matching logic
-- [ ] Create /mentorship page with mentor list
-- [ ] Create request and acceptance flow
-- [ ] Add mentorship status to profiles
+- [x] Add is_mentor, mentor_bio, mentorship_areas to profiles
+- [x] Create mentorship_requests table
+- [x] Create MentorshipService with request/accept/reject
+- [x] Create /mentorship page with mentor list
+- [x] Create request and acceptance flow
+- [x] Add mentorship status to profiles

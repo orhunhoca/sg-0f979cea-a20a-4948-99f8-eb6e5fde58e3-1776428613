@@ -73,6 +73,9 @@ export function Navigation() {
             <Link href="/groups" className="text-sm font-medium hover:text-primary transition-colors">
               Gruplar
             </Link>
+            <Link href="/mentorship" className="text-sm font-medium hover:text-primary transition-colors">
+              Mentorluk
+            </Link>
             <Link href="/messages" className="text-sm font-medium hover:text-primary transition-colors">
               Mesajlar
             </Link>
