@@ -1,6 +1,6 @@
 ---
 title: Job Board & Referral System
-status: in_progress
+status: done
 priority: high
 type: feature
 tags: [jobs, career, referrals]
@@ -20,10 +20,10 @@ Requirements:
 - İlan sahibi başvuruları görebilir
 
 ## Checklist
-- [ ] Create jobs table with company, location, requirements
-- [ ] Create job_applications table for tracking
-- [ ] Create JobService with post, apply, referral methods
-- [ ] Create /jobs page with job listings and filters
-- [ ] Create /jobs/create page for posting jobs
-- [ ] Create /jobs/[id] detail page with apply button
-- [ ] Add referral modal for recommending candidates
+- [x] Create jobs table with company, location, requirements
+- [x] Create job_applications table for tracking
+- [x] Create JobService with post, apply, referral methods
+- [x] Create /jobs page with job listings and filters
+- [x] Create /jobs/create page for posting jobs
+- [x] Create /jobs/[id] detail page with apply button
+- [x] Add referral modal for recommending candidates
