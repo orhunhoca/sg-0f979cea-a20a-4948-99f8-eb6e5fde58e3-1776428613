@@ -1,8 +1,9 @@
-import "@/styles/globals.css";
 import type { AppProps } from "next/app";
 import { ThemeProvider } from "@/contexts/ThemeProvider";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { Toaster } from "@/components/ui/toaster";
+import { WhatsAppFloating } from "@/components/WhatsAppFloating";
+import "@/styles/globals.css";
 
 export default function App({ Component, pageProps }: AppProps) {
   return (
@@ -10,6 +11,7 @@ export default function App({ Component, pageProps }: AppProps) {
       <LanguageProvider>
         <Component {...pageProps} />
         <Toaster />
+        <WhatsAppFloating />
       </LanguageProvider>
     </ThemeProvider>
   );

@@ -28,7 +28,7 @@ import {
 } from "@/components/ui/navigation-menu";
 import { authService } from "@/services/authService";
 import { notificationService } from "@/services/notificationService";
-import { Bell, LogOut, User, Menu, X, ChevronDown, Instagram, Twitter, Linkedin } from "lucide-react";
+import { Bell, LogOut, User, Menu, X, ChevronDown, Instagram, Twitter, Linkedin, MessageCircle } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { tr } from "date-fns/locale";
 import { cn } from "@/lib/utils";
@@ -264,6 +264,15 @@ export function Navigation() {
               aria-label="LinkedIn"
             >
               <Linkedin className="h-5 w-5" />
+            </a>
+            <a
+              href="https://wa.me/905403963337"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-muted-foreground hover:text-[#25D366] transition-colors"
+              aria-label="WhatsApp"
+            >
+              <MessageCircle className="h-5 w-5" />
             </a>
           </div>
 
@@ -518,6 +527,15 @@ export function Navigation() {
                   aria-label="LinkedIn"
                 >
                   <Linkedin className="h-6 w-6" />
+                </a>
+                <a
+                  href="https://wa.me/905403963337"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-muted-foreground hover:text-[#25D366] transition-colors"
+                  aria-label="WhatsApp"
+                >
+                  <MessageCircle className="h-6 w-6" />
                 </a>
               </div>
             </div>
