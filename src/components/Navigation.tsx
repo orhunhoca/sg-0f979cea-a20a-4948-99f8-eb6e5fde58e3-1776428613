@@ -118,18 +118,23 @@ export function Navigation() {
 
   return (
     <nav className="border-b bg-card sticky top-0 z-50 shadow-sm">
-      <div className="container flex h-16 items-center justify-between">
-        {/* Logo */}
-        <Link href="/" className="flex items-center gap-2">
+      <div className="container flex h-16 items-center justify-between px-4">
+        {/* Logo - Left Side */}
+        <Link href="/" className="flex items-center gap-3 flex-shrink-0">
           <img 
             src="/logo.jpg" 
-            alt="Eyüboğlu Logo" 
-            className="h-12 w-auto object-contain"
+            alt="Eyüboğlu Mezunlar Derneği" 
+            className="h-14 w-auto"
+            onError={(e) => {
+              console.error("Logo yüklenemedi");
+              e.currentTarget.style.display = "none";
+            }}
           />
+          <span className="font-semibold text-lg hidden md:block">Eyüboğlu MD</span>
         </Link>
 
         {/* Desktop Navigation */}
-        <div className="hidden lg:flex items-center gap-6">
+        <div className="hidden lg:flex items-center gap-6 flex-1 justify-center">
           <Link href="/" className="text-sm font-medium hover:text-primary transition-colors">
             Ana Sayfa
           </Link>
