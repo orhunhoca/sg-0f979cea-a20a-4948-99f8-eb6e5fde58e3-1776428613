@@ -124,7 +124,7 @@ export function Navigation() {
           <img 
             src="/logo.jpg" 
             alt="Eyüboğlu Logo" 
-            className="h-10 w-auto object-contain"
+            className="h-12 w-auto object-contain"
           />
         </Link>
 

@@ -20,27 +20,28 @@ export function Footer() {
 
           {/* Contact Info */}
           <div className="space-y-4">
-            <h3 className="text-white font-semibold text-lg">İletişim Bilgileri</h3>
-            <div className="space-y-3">
-              <div className="flex items-start gap-3">
-                <MapPin className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                <p className="text-sm">
-                  [ADRES BİLGİSİ EKLENECEK]
-                </p>
-              </div>
-              <div className="flex items-center gap-3">
-                <Phone className="h-5 w-5 text-primary flex-shrink-0" />
+            <h3 className="text-white font-semibold text-lg">İletişim</h3>
+            <ul className="space-y-3">
+              <li className="flex items-start gap-3">
+                <MapPin className="h-5 w-5 mt-0.5 flex-shrink-0" />
+                <span className="text-sm">
+                  Esenevler Mahallesi Dr. Rüstem Eyüboğlu Sokak No:8<br />
+                  Ümraniye / İstanbul
+                </span>
+              </li>
+              <li className="flex items-center gap-3">
+                <Phone className="h-5 w-5 flex-shrink-0" />
                 <a href="tel:+905403963337" className="text-sm hover:text-white transition-colors">
                   +90 540 396 33 37
                 </a>
-              </div>
-              <div className="flex items-center gap-3">
-                <Mail className="h-5 w-5 text-primary flex-shrink-0" />
-                <a href="mailto:info@eymeder.com" className="text-sm hover:text-white transition-colors">
-                  [EMAIL BİLGİSİ EKLENECEK]
+              </li>
+              <li className="flex items-center gap-3">
+                <Mail className="h-5 w-5 flex-shrink-0" />
+                <a href="mailto:mezunlar@eyuboglu.k12.tr" className="text-sm hover:text-white transition-colors">
+                  mezunlar@eyuboglu.k12.tr
                 </a>
-              </div>
-            </div>
+              </li>
+            </ul>
           </div>
 
           {/* Quick Links */}
