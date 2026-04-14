@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
 import { authService } from "@/services/authService";
 import { profileService } from "@/services/profileService";
 import { brandService } from "@/services/brandService";
@@ -38,7 +39,6 @@ import {
   TabsTrigger,
   TabsContent,
 } from "@/components/ui/tabs";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -60,9 +60,18 @@ export default function AdminPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState<"users" | "roles" | "brands">("users");
+  
+  // States
   const [users, setUsers] = useState<any[]>([]);
   const [brands, setBrands] = useState<any[]>([]);
+  const [memberships, setMemberships] = useState<MembershipRecord[]>([]);
+  
+  // Loading states
   const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
+  
+  // Form states
+  const [file, setFile] = useState<File | null>(null);
   const [editingBrand, setEditingBrand] = useState<any>(null);
   const [newBrand, setNewBrand] = useState({
     name: "",
@@ -87,11 +96,9 @@ export default function AdminPage() {
     }
 
     const { data: profile } = await profileService.getProfileById(session.user.id);
-    // Cast profile to any to bypass TS error if is_admin is not in types yet
-    const userProfile = profile as any;
     
-    // Temporarily allow all logged-in users for testing
-    // TODO: Re-enable admin check after setting up first admin
+    // Geçici olarak tüm giriş yapanları admin paneline alıyoruz (test için)
+    // const userProfile = profile as any;
     // if (!userProfile?.is_admin) {
     //   router.push("/");
     //   return;
@@ -99,6 +106,7 @@ export default function AdminPage() {
 
     loadUsers();
     loadBrands();
+    loadMemberships();
   };
 
   const loadUsers = async () => {
@@ -139,7 +147,6 @@ export default function AdminPage() {
       const line = lines[i].trim();
       if (!line) continue;
 
-      // Handle both comma and semicolon separators
       const parts = line.includes(";") 
         ? line.split(";").map(p => p.trim()) 
         : line.split(",").map(p => p.trim());
@@ -147,7 +154,6 @@ export default function AdminPage() {
       if (parts.length >= 3) {
         const [email, full_name, membership_number] = parts;
         
-        // Validate membership number (8 digits)
         if (membership_number && /^\d{8}$/.test(membership_number.trim())) {
           records.push({
             email: email.trim(),
@@ -163,11 +169,7 @@ export default function AdminPage() {
 
   const handleUpload = async () => {
     if (!file) {
-      toast({
-        title: "Hata",
-        description: "Lütfen bir dosya seçin",
-        variant: "destructive",
-      });
+      toast({ title: "Hata", description: "Lütfen bir dosya seçin", variant: "destructive" });
       return;
     }
 
@@ -187,53 +189,28 @@ export default function AdminPage() {
         return;
       }
 
-      // Insert records
-      const { error } = await supabase
-        .from("membership_numbers")
-        .insert(records);
+      const { error } = await supabase.from("membership_numbers").insert(records);
 
       if (error) {
-        toast({
-          title: "Hata",
-          description: `Kayıtlar eklenirken hata oluştu: ${error.message}`,
-          variant: "destructive",
-        });
+        toast({ title: "Hata", description: `Kayıtlar eklenirken hata: ${error.message}`, variant: "destructive" });
       } else {
-        toast({
-          title: "Başarılı",
-          description: `${records.length} kayıt başarıyla eklendi`,
-        });
+        toast({ title: "Başarılı", description: `${records.length} kayıt başarıyla eklendi` });
         setFile(null);
         loadMemberships();
       }
     } catch (error: any) {
-      toast({
-        title: "Hata",
-        description: `Dosya işlenirken hata: ${error.message}`,
-        variant: "destructive",
-      });
+      toast({ title: "Hata", description: `Dosya işlenirken hata: ${error.message}`, variant: "destructive" });
     }
 
     setUploading(false);
   };
 
   const handleDelete = async (id: string) => {
-    const { error } = await supabase
-      .from("membership_numbers")
-      .delete()
-      .eq("id", id);
-
+    const { error } = await supabase.from("membership_numbers").delete().eq("id", id);
     if (error) {
-      toast({
-        title: "Hata",
-        description: "Kayıt silinemedi",
-        variant: "destructive",
-      });
+      toast({ title: "Hata", description: "Kayıt silinemedi", variant: "destructive" });
     } else {
-      toast({
-        title: "Başarılı",
-        description: "Kayıt silindi",
-      });
+      toast({ title: "Başarılı", description: "Kayıt silindi" });
       loadMemberships();
     }
   };
@@ -250,18 +227,10 @@ export default function AdminPage() {
   };
 
   const handleRoleUpdate = async (userId: string, newRole: string) => {
-    const updates: any = {};
-    
-    if (newRole === "admin") {
-      updates.is_admin = true;
-      updates.is_moderator = false;
-    } else if (newRole === "moderator") {
-      updates.is_admin = false;
-      updates.is_moderator = true;
-    } else {
-      updates.is_admin = false;
-      updates.is_moderator = false;
-    }
+    const updates: any = {
+      is_admin: newRole === "admin",
+      is_moderator: newRole === "moderator"
+    };
 
     const { error } = await profileService.updateProfileById(userId, updates);
     if (!error) {
@@ -282,14 +251,8 @@ export default function AdminPage() {
     if (!error) {
       toast({ title: "Marka eklendi" });
       setNewBrand({
-        name: "",
-        category: "Diğer",
-        description: "",
-        discount_info: "",
-        logo_url: "",
-        website_url: "",
-        is_active: true,
-        display_order: 0,
+        name: "", category: "Diğer", description: "", discount_info: "",
+        logo_url: "", website_url: "", is_active: true, display_order: 0,
       });
       loadBrands();
     } else {
@@ -299,7 +262,6 @@ export default function AdminPage() {
 
   const handleUpdateBrand = async () => {
     if (!editingBrand) return;
-
     const { error } = await brandService.updateBrand(editingBrand.id, editingBrand);
     if (!error) {
       toast({ title: "Marka güncellendi" });
@@ -312,7 +274,6 @@ export default function AdminPage() {
 
   const handleDeleteBrand = async (id: string) => {
     if (!confirm("Bu markayı silmek istediğinizden emin misiniz?")) return;
-
     const { error } = await brandService.deleteBrand(id);
     if (!error) {
       toast({ title: "Marka silindi" });
@@ -342,10 +303,7 @@ export default function AdminPage() {
 
   return (
     <>
-      <SEO 
-        title="Admin Panel - Mezunlar Derneği"
-        description="Yönetim paneli"
-      />
+      <SEO title="Admin Panel - Mezunlar Derneği" description="Yönetim paneli" />
       
       <div className="min-h-screen bg-background">
         <Navigation />
@@ -356,16 +314,14 @@ export default function AdminPage() {
               <h1 className="text-3xl font-heading font-bold">Admin Panel</h1>
             </div>
 
-            {/* Upload Section */}
+            {/* Toplu Yükleme Bölümü (Her zaman üstte görünsün) */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Upload className="h-5 w-5" />
                   Toplu Üyelik Numarası Yükleme
                 </CardTitle>
-                <CardDescription>
-                  CSV veya Excel dosyasından üyelik numaralarını toplu olarak yükleyin
-                </CardDescription>
+                <CardDescription>CSV veya Excel dosyasından üyelik numaralarını toplu yükleyin</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="bg-muted p-4 rounded-lg space-y-2">
@@ -373,367 +329,236 @@ export default function AdminPage() {
                   <ul className="text-sm text-muted-foreground list-disc list-inside space-y-1">
                     <li>CSV formatı (virgül veya noktalı virgül ile ayrılmış)</li>
                     <li>İlk satır başlık: Email, Full Name, Membership Number</li>
-                    <li>Üyelik numarası tam 8 haneli olmalı</li>
                     <li>Örnek: ahmet@example.com,Ahmet Yılmaz,12345678</li>
                   </ul>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={downloadTemplate}
-                    className="mt-2"
-                  >
-                    <Download className="h-4 w-4 mr-2" />
-                    Örnek Dosya İndir
+                  <Button variant="outline" size="sm" onClick={downloadTemplate} className="mt-2">
+                    <Download className="h-4 w-4 mr-2" /> Örnek Dosya İndir
                   </Button>
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="csv-file">CSV/Excel Dosyası</Label>
-                  <Input
-                    id="csv-file"
-                    type="file"
-                    accept=".csv,.xlsx,.xls"
-                    onChange={handleFileChange}
-                  />
-                  {file && (
-                    <p className="text-sm text-muted-foreground">
-                      Seçilen dosya: {file.name}
-                    </p>
-                  )}
+                  <Input id="csv-file" type="file" accept=".csv,.xlsx,.xls" onChange={handleFileChange} />
+                  {file && <p className="text-sm text-muted-foreground">Seçilen dosya: {file.name}</p>}
                 </div>
 
-                <Button
-                  onClick={handleUpload}
-                  disabled={!file || uploading}
-                  className="w-full"
-                >
-                  {uploading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Yükleniyor...
-                    </>
-                  ) : (
-                    <>
-                      <Upload className="mr-2 h-4 w-4" />
-                      Dosyayı Yükle
-                    </>
-                  )}
+                <Button onClick={handleUpload} disabled={!file || uploading} className="w-full">
+                  {uploading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Yükleniyor...</> : <><Upload className="mr-2 h-4 w-4" /> Dosyayı Yükle</>}
                 </Button>
               </CardContent>
             </Card>
 
-            {/* Memberships List */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center justify-between">
-                  <span className="flex items-center gap-2">
-                    <Users className="h-5 w-5" />
-                    Üyelik Numaraları ({memberships.length})
-                  </span>
-                </CardTitle>
-                <CardDescription>
-                  Sistemdeki tüm üyelik numaraları
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="rounded-md border">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Email</TableHead>
-                        <TableHead>Ad Soyad</TableHead>
-                        <TableHead>Üyelik No</TableHead>
-                        <TableHead>Durum</TableHead>
-                        <TableHead>Tarih</TableHead>
-                        <TableHead className="text-right">İşlem</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {memberships.length === 0 ? (
-                        <TableRow>
-                          <TableCell colSpan={6} className="text-center text-muted-foreground">
-                            Henüz üyelik numarası yüklenmemiş
-                          </TableCell>
-                        </TableRow>
-                      ) : (
-                        memberships.map((record) => (
-                          <TableRow key={record.id}>
-                            <TableCell className="font-medium">{record.email}</TableCell>
-                            <TableCell>{record.full_name}</TableCell>
-                            <TableCell>
-                              <code className="bg-muted px-2 py-1 rounded">
-                                {record.membership_number}
-                              </code>
-                            </TableCell>
-                            <TableCell>
-                              {record.is_used ? (
-                                <Badge variant="secondary" className="gap-1">
-                                  <CheckCircle2 className="h-3 w-3" />
-                                  Kullanıldı
-                                </Badge>
-                              ) : (
-                                <Badge variant="outline" className="gap-1">
-                                  <XCircle className="h-3 w-3" />
-                                  Bekliyor
-                                </Badge>
-                              )}
-                            </TableCell>
-                            <TableCell className="text-sm text-muted-foreground">
-                              {new Date(record.created_at).toLocaleDateString("tr-TR")}
-                            </TableCell>
-                            <TableCell className="text-right">
-                              <AlertDialog>
-                                <AlertDialogTrigger asChild>
-                                  <Button variant="ghost" size="sm">
-                                    <Trash2 className="h-4 w-4 text-destructive" />
-                                  </Button>
-                                </AlertDialogTrigger>
-                                <AlertDialogContent>
-                                  <AlertDialogHeader>
-                                    <AlertDialogTitle>Emin misiniz?</AlertDialogTitle>
-                                    <AlertDialogDescription>
-                                      Bu üyelik numarası kalıcı olarak silinecek.
-                                    </AlertDialogDescription>
-                                  </AlertDialogHeader>
-                                  <AlertDialogFooter>
-                                    <AlertDialogCancel>İptal</AlertDialogCancel>
-                                    <AlertDialogAction onClick={() => handleDelete(record.id)}>
-                                      Sil
-                                    </AlertDialogAction>
-                                  </AlertDialogFooter>
-                                </AlertDialogContent>
-                              </AlertDialog>
-                            </TableCell>
-                          </TableRow>
-                        ))
-                      )}
-                    </TableBody>
-                  </Table>
-                </div>
-              </CardContent>
-            </Card>
-
+            {/* SEKMELER */}
             <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className="w-full">
               <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="users">
-                  <Users className="h-4 w-4 mr-2" />
-                  Kullanıcılar
-                </TabsTrigger>
-                <TabsTrigger value="roles">
-                  <Shield className="h-4 w-4 mr-2" />
-                  Roller
-                </TabsTrigger>
-                <TabsTrigger value="brands">
-                  <Tag className="h-4 w-4 mr-2" />
-                  Markalar
-                </TabsTrigger>
+                <TabsTrigger value="users"><Users className="h-4 w-4 mr-2" /> Kullanıcılar</TabsTrigger>
+                <TabsTrigger value="roles"><Shield className="h-4 w-4 mr-2" /> Roller</TabsTrigger>
+                <TabsTrigger value="brands"><Tag className="h-4 w-4 mr-2" /> Markalar</TabsTrigger>
               </TabsList>
 
-              {/* Users Tab */}
+              {/* SEKME 1: KULLANICILAR */}
               <TabsContent value="users" className="space-y-4 mt-6">
-                {/* Brands Tab */}
-                <TabsContent value="brands" className="space-y-6">
-                  {/* Add New Brand */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Plus className="h-5 w-5" />
-                        Yeni Marka Ekle
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <label className="text-sm font-medium">Marka Adı *</label>
-                          <Input
-                            value={newBrand.name}
-                            onChange={(e) => setNewBrand({ ...newBrand, name: e.target.value })}
-                            placeholder="Örn: Starbucks"
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <label className="text-sm font-medium">Kategori</label>
-                          <select
-                            value={newBrand.category}
-                            onChange={(e) => setNewBrand({ ...newBrand, category: e.target.value })}
-                            className="w-full px-3 py-2 border rounded-md"
-                          >
-                            <option value="Yeme-İçme">Yeme-İçme</option>
-                            <option value="Giyim">Giyim</option>
-                            <option value="Teknoloji">Teknoloji</option>
-                            <option value="Sağlık">Sağlık</option>
-                            <option value="Eğitim">Eğitim</option>
-                            <option value="Diğer">Diğer</option>
-                          </select>
-                        </div>
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium">Açıklama</label>
-                        <Textarea
-                          value={newBrand.description}
-                          onChange={(e) => setNewBrand({ ...newBrand, description: e.target.value })}
-                          placeholder="Marka hakkında kısa bilgi"
-                          rows={2}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium">İndirim Bilgisi *</label>
-                        <Input
-                          value={newBrand.discount_info}
-                          onChange={(e) => setNewBrand({ ...newBrand, discount_info: e.target.value })}
-                          placeholder="Örn: %15 indirim"
-                        />
-                      </div>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <label className="text-sm font-medium">Logo URL</label>
-                          <Input
-                            value={newBrand.logo_url}
-                            onChange={(e) => setNewBrand({ ...newBrand, logo_url: e.target.value })}
-                            placeholder="https://example.com/logo.png"
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <label className="text-sm font-medium">Website URL</label>
-                          <Input
-                            value={newBrand.website_url}
-                            onChange={(e) => setNewBrand({ ...newBrand, website_url: e.target.value })}
-                            placeholder="https://example.com"
-                          />
-                        </div>
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium">Sıralama</label>
-                        <Input
-                          type="number"
-                          value={newBrand.display_order}
-                          onChange={(e) => setNewBrand({ ...newBrand, display_order: parseInt(e.target.value) || 0 })}
-                          placeholder="0"
-                        />
-                      </div>
-                      <Button onClick={handleCreateBrand} className="w-full">
-                        <Plus className="h-4 w-4 mr-2" />
-                        Marka Ekle
-                      </Button>
-                    </CardContent>
-                  </Card>
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Sistemdeki Kullanıcılar ({users.length})</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Ad Soyad</TableHead>
+                          <TableHead>Email</TableHead>
+                          <TableHead>Üyelik No</TableHead>
+                          <TableHead>Kayıt Tarihi</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {users.map((u) => (
+                          <TableRow key={u.id}>
+                            <TableCell className="font-medium">{u.full_name || 'İsimsiz'}</TableCell>
+                            <TableCell>{u.email}</TableCell>
+                            <TableCell>{u.membership_number || '-'}</TableCell>
+                            <TableCell>{new Date(u.created_at).toLocaleDateString('tr-TR')}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </CardContent>
+                </Card>
+              </TabsContent>
 
-                  {/* Existing Brands */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Mevcut Markalar ({brands.length})</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      {brands.length === 0 ? (
-                        <p className="text-center text-muted-foreground py-8">Henüz marka eklenmemiş</p>
-                      ) : (
-                        <div className="space-y-4">
-                          {brands.map((brand) => (
-                            <Card key={brand.id}>
-                              <CardContent className="pt-6">
-                                {editingBrand?.id === brand.id ? (
-                                  <div className="space-y-4">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                      <Input
-                                        value={editingBrand.name}
-                                        onChange={(e) => setEditingBrand({ ...editingBrand, name: e.target.value })}
-                                        placeholder="Marka Adı"
-                                      />
-                                      <select
-                                        value={editingBrand.category}
-                                        onChange={(e) => setEditingBrand({ ...editingBrand, category: e.target.value })}
-                                        className="px-3 py-2 border rounded-md"
-                                      >
-                                        <option value="Yeme-İçme">Yeme-İçme</option>
-                                        <option value="Giyim">Giyim</option>
-                                        <option value="Teknoloji">Teknoloji</option>
-                                        <option value="Sağlık">Sağlık</option>
-                                        <option value="Eğitim">Eğitim</option>
-                                        <option value="Diğer">Diğer</option>
-                                      </select>
-                                    </div>
-                                    <Textarea
-                                      value={editingBrand.description || ""}
-                                      onChange={(e) => setEditingBrand({ ...editingBrand, description: e.target.value })}
-                                      placeholder="Açıklama"
-                                      rows={2}
-                                    />
-                                    <Input
-                                      value={editingBrand.discount_info}
-                                      onChange={(e) => setEditingBrand({ ...editingBrand, discount_info: e.target.value })}
-                                      placeholder="İndirim Bilgisi"
-                                    />
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                      <Input
-                                        value={editingBrand.logo_url || ""}
-                                        onChange={(e) => setEditingBrand({ ...editingBrand, logo_url: e.target.value })}
-                                        placeholder="Logo URL"
-                                      />
-                                      <Input
-                                        value={editingBrand.website_url || ""}
-                                        onChange={(e) => setEditingBrand({ ...editingBrand, website_url: e.target.value })}
-                                        placeholder="Website URL"
-                                      />
-                                    </div>
-                                    <div className="flex gap-2">
-                                      <Button onClick={handleUpdateBrand} size="sm">
-                                        <Save className="h-4 w-4 mr-2" />
-                                        Kaydet
-                                      </Button>
-                                      <Button onClick={() => setEditingBrand(null)} size="sm" variant="outline">
-                                        <X className="h-4 w-4 mr-2" />
-                                        İptal
-                                      </Button>
-                                    </div>
+              {/* SEKME 2: ROLLER */}
+              <TabsContent value="roles" className="space-y-4 mt-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Kullanıcı Rolleri</CardTitle>
+                    <CardDescription>Sistemdeki yöneticileri ve moderatörleri belirleyin</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Kullanıcı</TableHead>
+                          <TableHead>Mevcut Rol</TableHead>
+                          <TableHead>Rol Değiştir</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {users.map((u) => (
+                          <TableRow key={u.id}>
+                            <TableCell>
+                              <div>
+                                <p className="font-medium">{u.full_name}</p>
+                                <p className="text-sm text-muted-foreground">{u.email}</p>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              {u.is_admin ? (
+                                <Badge className="bg-red-500">Admin</Badge>
+                              ) : u.is_moderator ? (
+                                <Badge className="bg-blue-500">Moderatör</Badge>
+                              ) : (
+                                <Badge variant="outline">Kullanıcı</Badge>
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              <Select
+                                defaultValue={u.is_admin ? "admin" : u.is_moderator ? "moderator" : "user"}
+                                onValueChange={(val) => handleRoleUpdate(u.id, val)}
+                              >
+                                <SelectTrigger className="w-[150px]">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="user">Kullanıcı</SelectItem>
+                                  <SelectItem value="moderator">Moderatör</SelectItem>
+                                  <SelectItem value="admin">Admin</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              {/* SEKME 3: MARKALAR */}
+              <TabsContent value="brands" className="space-y-6 mt-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2"><Plus className="h-5 w-5" /> Yeni Marka Ekle</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label>Marka Adı *</Label>
+                        <Input value={newBrand.name} onChange={(e) => setNewBrand({ ...newBrand, name: e.target.value })} placeholder="Örn: Starbucks" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Kategori</Label>
+                        <Select value={newBrand.category} onValueChange={(val) => setNewBrand({ ...newBrand, category: val })}>
+                          <SelectTrigger><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Yeme-İçme">Yeme-İçme</SelectItem>
+                            <SelectItem value="Giyim">Giyim</SelectItem>
+                            <SelectItem value="Teknoloji">Teknoloji</SelectItem>
+                            <SelectItem value="Sağlık">Sağlık</SelectItem>
+                            <SelectItem value="Eğitim">Eğitim</SelectItem>
+                            <SelectItem value="Diğer">Diğer</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Açıklama</Label>
+                      <Textarea value={newBrand.description} onChange={(e) => setNewBrand({ ...newBrand, description: e.target.value })} rows={2} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>İndirim Bilgisi *</Label>
+                      <Input value={newBrand.discount_info} onChange={(e) => setNewBrand({ ...newBrand, discount_info: e.target.value })} placeholder="Örn: %15 indirim" />
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label>Logo URL</Label>
+                        <Input value={newBrand.logo_url} onChange={(e) => setNewBrand({ ...newBrand, logo_url: e.target.value })} />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Website URL</Label>
+                        <Input value={newBrand.website_url} onChange={(e) => setNewBrand({ ...newBrand, website_url: e.target.value })} />
+                      </div>
+                    </div>
+                    <Button onClick={handleCreateBrand} className="w-full"><Plus className="h-4 w-4 mr-2" /> Marka Ekle</Button>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Mevcut Markalar ({brands.length})</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {brands.length === 0 ? (
+                      <p className="text-center text-muted-foreground py-8">Henüz marka eklenmemiş</p>
+                    ) : (
+                      <div className="space-y-4">
+                        {brands.map((brand) => (
+                          <Card key={brand.id}>
+                            <CardContent className="pt-6">
+                              {editingBrand?.id === brand.id ? (
+                                <div className="space-y-4">
+                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <Input value={editingBrand.name} onChange={(e) => setEditingBrand({ ...editingBrand, name: e.target.value })} />
+                                    <Select value={editingBrand.category} onValueChange={(val) => setEditingBrand({ ...editingBrand, category: val })}>
+                                      <SelectTrigger><SelectValue /></SelectTrigger>
+                                      <SelectContent>
+                                        <SelectItem value="Yeme-İçme">Yeme-İçme</SelectItem>
+                                        <SelectItem value="Giyim">Giyim</SelectItem>
+                                        <SelectItem value="Teknoloji">Teknoloji</SelectItem>
+                                        <SelectItem value="Sağlık">Sağlık</SelectItem>
+                                        <SelectItem value="Eğitim">Eğitim</SelectItem>
+                                        <SelectItem value="Diğer">Diğer</SelectItem>
+                                      </SelectContent>
+                                    </Select>
                                   </div>
-                                ) : (
-                                  <div className="flex items-start justify-between gap-4">
-                                    <div className="flex-1">
-                                      <div className="flex items-center gap-3 mb-2">
-                                        <h3 className="font-semibold text-lg">{brand.name}</h3>
-                                        <Badge variant="outline">{brand.category}</Badge>
-                                        {!brand.is_active && (
-                                          <Badge variant="secondary">Pasif</Badge>
-                                        )}
-                                      </div>
-                                      {brand.description && (
-                                        <p className="text-sm text-muted-foreground mb-2">{brand.description}</p>
-                                      )}
-                                      <p className="text-sm font-medium text-green-600">{brand.discount_info}</p>
-                                    </div>
-                                    <div className="flex gap-2">
-                                      <Button
-                                        size="sm"
-                                        variant="outline"
-                                        onClick={() => handleToggleBrand(brand.id, !brand.is_active)}
-                                      >
-                                        {brand.is_active ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                                      </Button>
-                                      <Button
-                                        size="sm"
-                                        variant="outline"
-                                        onClick={() => setEditingBrand(brand)}
-                                      >
-                                        <Edit2 className="h-4 w-4" />
-                                      </Button>
-                                      <Button
-                                        size="sm"
-                                        variant="destructive"
-                                        onClick={() => handleDeleteBrand(brand.id)}
-                                      >
-                                        <Trash2 className="h-4 w-4" />
-                                      </Button>
-                                    </div>
+                                  <Textarea value={editingBrand.description || ""} onChange={(e) => setEditingBrand({ ...editingBrand, description: e.target.value })} rows={2} />
+                                  <Input value={editingBrand.discount_info} onChange={(e) => setEditingBrand({ ...editingBrand, discount_info: e.target.value })} />
+                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <Input value={editingBrand.logo_url || ""} onChange={(e) => setEditingBrand({ ...editingBrand, logo_url: e.target.value })} placeholder="Logo URL" />
+                                    <Input value={editingBrand.website_url || ""} onChange={(e) => setEditingBrand({ ...editingBrand, website_url: e.target.value })} placeholder="Website URL" />
                                   </div>
-                                )}
-                              </CardContent>
-                            </Card>
-                          ))}
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                </TabsContent>
+                                  <div className="flex gap-2">
+                                    <Button onClick={handleUpdateBrand} size="sm"><Save className="h-4 w-4 mr-2" /> Kaydet</Button>
+                                    <Button onClick={() => setEditingBrand(null)} size="sm" variant="outline"><X className="h-4 w-4 mr-2" /> İptal</Button>
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="flex items-start justify-between gap-4">
+                                  <div className="flex-1">
+                                    <div className="flex items-center gap-3 mb-2">
+                                      <h3 className="font-semibold text-lg">{brand.name}</h3>
+                                      <Badge variant="outline">{brand.category}</Badge>
+                                      {!brand.is_active && <Badge variant="secondary">Pasif</Badge>}
+                                    </div>
+                                    {brand.description && <p className="text-sm text-muted-foreground mb-2">{brand.description}</p>}
+                                    <p className="text-sm font-medium text-green-600">{brand.discount_info}</p>
+                                  </div>
+                                  <div className="flex gap-2">
+                                    <Button size="sm" variant="outline" onClick={() => handleToggleBrand(brand.id, !brand.is_active)}>
+                                      {brand.is_active ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                    </Button>
+                                    <Button size="sm" variant="outline" onClick={() => setEditingBrand(brand)}><Edit2 className="h-4 w-4" /></Button>
+                                    <Button size="sm" variant="destructive" onClick={() => handleDeleteBrand(brand.id)}><Trash2 className="h-4 w-4" /></Button>
+                                  </div>
+                                </div>
+                              )}
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
               </TabsContent>
             </Tabs>
           </div>
