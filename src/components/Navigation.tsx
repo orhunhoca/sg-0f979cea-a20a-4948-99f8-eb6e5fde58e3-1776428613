@@ -139,18 +139,23 @@ export function Navigation() {
           
           {/* Hakkımızda Dropdown */}
           <DropdownMenu>
-            <DropdownMenuTrigger className="flex items-center gap-1 text-sm font-medium hover:text-primary transition-colors outline-none">
-              Hakkımızda
-              <ChevronDown className="h-3 w-3" />
+            <DropdownMenuTrigger asChild>
+              <button className="text-sm font-medium hover:text-primary transition-colors flex items-center gap-1">
+                Hakkımızda
+                <ChevronDown className="h-4 w-4" />
+              </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start">
-              {aboutItems.map((item) => (
-                <DropdownMenuItem key={item.href} asChild>
-                  <Link href={item.href} className="cursor-pointer">
-                    {item.label}
-                  </Link>
-                </DropdownMenuItem>
-              ))}
+              <DropdownMenuItem asChild>
+                <Link href="/about/baskanin-mesaji" className="cursor-pointer">
+                  Başkanın Mesajı
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/about/yonetim-kurulu" className="cursor-pointer">
+                  Yönetim Kurulu
+                </Link>
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
 
@@ -366,17 +371,21 @@ export function Navigation() {
             </Link>
             
             <div className="space-y-1">
-              <div className="px-4 py-2 text-sm font-semibold text-muted-foreground">Hakkımızda</div>
-              {aboutItems.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className="block pl-8 pr-4 py-2 text-sm hover:bg-muted rounded-md transition-colors"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  {item.label}
-                </Link>
-              ))}
+              <div className="px-4 py-2 text-sm font-medium text-muted-foreground">Hakkımızda</div>
+              <Link 
+                href="/about/baskanin-mesaji" 
+                className="block px-8 py-2 hover:bg-muted rounded-md transition-colors text-sm"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Başkanın Mesajı
+              </Link>
+              <Link 
+                href="/about/yonetim-kurulu" 
+                className="block px-8 py-2 hover:bg-muted rounded-md transition-colors text-sm"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Yönetim Kurulu
+              </Link>
             </div>
 
             <Link 
