@@ -224,9 +224,11 @@ export function Navigation() {
             </DropdownMenuContent>
           </DropdownMenu>
 
-          <Link href="/admin" className="text-sm font-medium hover:text-primary transition-colors">
-            Admin
-          </Link>
+          {user && (
+            <Link href="/admin" className="text-sm font-medium hover:text-primary transition-colors hidden lg:block">
+              Admin
+            </Link>
+          )}
         </div>
 
         <div className="flex items-center gap-4">

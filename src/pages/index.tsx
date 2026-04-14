@@ -1,49 +1,35 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
+import Link from "next/link";
 import Head from "next/head";
 import { SEO } from "@/components/SEO";
 import { Navigation } from "@/components/Navigation";
-import { authService } from "@/services/authService";
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/useAuth";
 import { 
   Users, 
   Calendar, 
   Briefcase, 
-  Image as ImageIcon, 
+  Image, 
   Newspaper, 
   Star, 
+  UsersRound, 
+  Award, 
+  MessageSquare, 
   UserPlus, 
-  MessageSquare,
-  UsersRound,
-  Award,
-  Tag
+  Tag,
+  ArrowRight
 } from "lucide-react";
-import Link from "next/link";
 
-export default function HomePage() {
+export default function Home() {
   const router = useRouter();
-  const [loading, setLoading] = useState(true);
+  const { user, profile, loading } = useAuth();
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    checkAuth();
+    setMounted(true);
   }, []);
-
-  const checkAuth = async () => {
-    const user = await authService.getCurrentUser();
-    if (!user) {
-      router.push("/auth/login");
-    } else {
-      setLoading(false);
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
 
   const menuItems = [
     {
@@ -52,7 +38,7 @@ export default function HomePage() {
       icon: Users,
       href: "/directory",
       gradient: "from-blue-500 to-blue-600",
-      iconBg: "bg-gradient-to-br from-blue-400 to-blue-600",
+      iconBg: "bg-blue-100 text-blue-600",
     },
     {
       title: "Etkinlikler",
@@ -60,15 +46,15 @@ export default function HomePage() {
       icon: Calendar,
       href: "/events",
       gradient: "from-purple-500 to-purple-600",
-      iconBg: "bg-gradient-to-br from-purple-400 to-purple-600",
+      iconBg: "bg-purple-100 text-purple-600",
     },
     {
       title: "İş İlanları",
       description: "Kariyer fırsatları",
       icon: Briefcase,
       href: "/jobs",
-      gradient: "from-green-500 to-green-600",
-      iconBg: "bg-gradient-to-br from-green-400 to-green-600",
+      gradient: "from-emerald-500 to-emerald-600",
+      iconBg: "bg-emerald-100 text-emerald-600",
     },
     {
       title: "Galeri",
@@ -76,7 +62,7 @@ export default function HomePage() {
       icon: Image,
       href: "/gallery",
       gradient: "from-pink-500 to-pink-600",
-      iconBg: "bg-gradient-to-br from-pink-400 to-pink-600",
+      iconBg: "bg-pink-100 text-pink-600",
     },
     {
       title: "Haberler",
@@ -84,7 +70,7 @@ export default function HomePage() {
       icon: Newspaper,
       href: "/news",
       gradient: "from-orange-500 to-orange-600",
-      iconBg: "bg-gradient-to-br from-orange-400 to-orange-600",
+      iconBg: "bg-orange-100 text-orange-600",
     },
     {
       title: "Başarılı Mezunlar",
@@ -92,7 +78,7 @@ export default function HomePage() {
       icon: Star,
       href: "/testimonials",
       gradient: "from-yellow-500 to-yellow-600",
-      iconBg: "bg-gradient-to-br from-yellow-400 to-yellow-600",
+      iconBg: "bg-yellow-100 text-yellow-600",
     },
     {
       title: "Gruplar",
@@ -100,7 +86,7 @@ export default function HomePage() {
       icon: UsersRound,
       href: "/groups",
       gradient: "from-indigo-500 to-indigo-600",
-      iconBg: "bg-gradient-to-br from-indigo-400 to-indigo-600",
+      iconBg: "bg-indigo-100 text-indigo-600",
     },
     {
       title: "Mentorluk",
@@ -108,7 +94,7 @@ export default function HomePage() {
       icon: Award,
       href: "/mentorship",
       gradient: "from-teal-500 to-teal-600",
-      iconBg: "bg-gradient-to-br from-teal-400 to-teal-600",
+      iconBg: "bg-teal-100 text-teal-600",
     },
     {
       title: "Mesajlar",
@@ -116,7 +102,7 @@ export default function HomePage() {
       icon: MessageSquare,
       href: "/messages",
       gradient: "from-red-500 to-red-600",
-      iconBg: "bg-gradient-to-br from-red-400 to-red-600",
+      iconBg: "bg-red-100 text-red-600",
     },
     {
       title: "Üyelik",
@@ -124,7 +110,7 @@ export default function HomePage() {
       icon: UserPlus,
       href: "/fonzip-signup",
       gradient: "from-cyan-500 to-cyan-600",
-      iconBg: "bg-gradient-to-br from-cyan-400 to-cyan-600",
+      iconBg: "bg-cyan-100 text-cyan-600",
     },
     {
       title: "İndirimli Markalar",
@@ -132,105 +118,95 @@ export default function HomePage() {
       icon: Tag,
       href: "/brands",
       gradient: "from-emerald-500 to-emerald-600",
-      iconBg: "bg-gradient-to-br from-emerald-400 to-emerald-600",
-    },
+      iconBg: "bg-emerald-100 text-emerald-600",
+    }
   ];
+
+  if (!mounted) return null;
 
   return (
     <>
       <Head>
-        <SEO 
-          title="Ana Sayfa - Eyüboğlu Mezunlar Derneği"
-          description="Eyüboğlu Eğitim Kurumları Mezunlar Derneği - Mezunlar arasında güçlü bir profesyonel ve sosyal bağlantı ağı"
-        />
+        <SEO title="Eyüboğlu Mezunlar Derneği" />
       </Head>
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
+      <div className="min-h-screen flex flex-col bg-background">
         <Navigation />
-        <main className="container py-8">
-          {/* Hero Section */}
-          <div className="text-center mb-12 space-y-4">
-            <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-              Hoş Geldiniz
-            </h1>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Eyüboğlu Eğitim Kurumları Mezunlar Derneği
-            </p>
-            <div className="h-1 w-24 bg-gradient-to-r from-primary to-accent mx-auto rounded-full"></div>
-          </div>
+        
+        <main className="flex-1">
+          {/* Welcome Section */}
+          <div className="container py-12 md:py-16">
+            <div className="text-center mb-12">
+              <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-4 text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent">
+                Hoş Geldiniz
+              </h1>
+              <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+                Eyüboğlu Eğitim Kurumları Mezunlar Derneği
+              </p>
+              <div className="w-24 h-1 bg-gradient-to-r from-primary to-accent mx-auto mt-6 rounded-full" />
+            </div>
 
-          {/* Modern Grid Menu */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 max-w-7xl mx-auto">
-            {menuItems.map((item) => {
-              const Icon = item.icon;
-              const CardComponent = (
-                <Card className="group cursor-pointer overflow-hidden hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 border-0">
-                  <CardContent className="p-0">
-                    <div className={`h-2 bg-gradient-to-r ${item.color}`}></div>
-                    <div className="p-6 space-y-4">
-                      <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${item.color} flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-lg`}>
-                        <Icon className="h-7 w-7 text-white" />
-                      </div>
-                      <div className="space-y-2">
-                        <h3 className="text-xl font-bold text-foreground group-hover:text-primary transition-colors">
-                          {item.title}
-                        </h3>
-                        <p className="text-sm text-muted-foreground">
-                          {item.description}
-                        </p>
-                      </div>
-                      <div className={`h-0.5 bg-gradient-to-r ${item.color} transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300`}></div>
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-
-              if (item.external) {
+            {/* Menu Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {menuItems.map((item) => {
+                const Icon = item.icon;
                 return (
-                  <a
-                    key={item.title}
-                    href={item.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    {CardComponent}
-                  </a>
+                  <Link href={item.href} key={item.title}>
+                    <Card className="group h-full overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border-0 ring-1 ring-border/50 bg-card cursor-pointer">
+                      {/* Top Gradient Line */}
+                      <div className={`h-2 w-full bg-gradient-to-r ${item.gradient}`} />
+                      
+                      <CardContent className="p-6">
+                        <div className="flex items-start gap-4">
+                          <div className={`p-4 rounded-2xl ${item.iconBg} transition-transform duration-300 group-hover:scale-110`}>
+                            <Icon className="h-8 w-8" />
+                          </div>
+                          <div className="flex-1 space-y-1">
+                            <h3 className="font-semibold text-lg tracking-tight group-hover:text-primary transition-colors">
+                              {item.title}
+                            </h3>
+                            <p className="text-sm text-muted-foreground leading-snug">
+                              {item.description}
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Bottom Animated Line */}
+                        <div className={`h-0.5 w-full bg-gradient-to-r ${item.gradient} mt-6 scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left rounded-full`} />
+                      </CardContent>
+                    </Card>
+                  </Link>
                 );
-              }
+              })}
+            </div>
 
-              return (
-                <Link key={item.title} href={item.href}>
-                  {CardComponent}
-                </Link>
-              );
-            })}
-          </div>
-
-          {/* Call to Action */}
-          <div className="mt-16 text-center">
-            <Card className="max-w-2xl mx-auto bg-gradient-to-br from-primary/10 via-accent/10 to-primary/10 border-primary/20">
-              <CardContent className="p-8 space-y-4">
-                <h2 className="text-2xl font-bold">Büyük Eyüboğlu Ailesine Hoş Geldiniz!</h2>
-                <p className="text-muted-foreground">
-                  Mezun arkadaşlarınızla bağlantıda kalın, etkinliklere katılın ve kariyer fırsatları keşfedin.
-                </p>
-                <div className="flex flex-wrap gap-4 justify-center pt-4">
-                  <Link 
-                    href="/directory"
-                    className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-primary to-primary/80 text-primary-foreground font-medium hover:shadow-lg transition-all hover:scale-105"
-                  >
-                    <Users className="h-5 w-5" />
-                    Mezunları Keşfet
-                  </Link>
-                  <Link 
-                    href="/profile"
-                    className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-accent to-accent/80 text-white font-medium hover:shadow-lg transition-all hover:scale-105"
-                  >
-                    <UserPlus className="h-5 w-5" />
-                    Profilini Tamamla
-                  </Link>
-                </div>
-              </CardContent>
-            </Card>
+            {/* Call to Action */}
+            <div className="mt-16">
+              <Card className="bg-gradient-to-br from-primary/10 via-background to-accent/10 border-primary/20 overflow-hidden relative">
+                {/* Decorative background circles */}
+                <div className="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 rounded-full bg-primary/5 blur-3xl" />
+                <div className="absolute bottom-0 left-0 -ml-16 -mb-16 w-64 h-64 rounded-full bg-accent/5 blur-3xl" />
+                
+                <CardContent className="p-8 md:p-12 text-center relative z-10">
+                  <h2 className="text-2xl md:text-3xl font-bold mb-4">Mezunlar Ağına Katılın</h2>
+                  <p className="text-muted-foreground max-w-2xl mx-auto mb-8 text-lg">
+                    Bağlantılarınızı güçlendirin, kariyer fırsatlarını yakalayın ve dernek etkinliklerinden haberdar olun.
+                  </p>
+                  <div className="flex flex-col sm:flex-row justify-center gap-4">
+                    <Button size="lg" asChild className="rounded-full px-8 shadow-md hover:shadow-lg transition-all hover:-translate-y-0.5">
+                      <Link href="/directory" className="flex items-center gap-2">
+                        Mezunları Keşfet
+                        <ArrowRight className="h-4 w-4" />
+                      </Link>
+                    </Button>
+                    <Button size="lg" variant="outline" asChild className="rounded-full px-8 bg-background/50 backdrop-blur-sm border-2 hover:bg-background/80 transition-all hover:-translate-y-0.5">
+                      <Link href={user ? "/profile" : "/auth/signup"}>
+                        {user ? "Profilini Güncelle" : "Aramıza Katıl"}
+                      </Link>
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </div>
         </main>
       </div>
