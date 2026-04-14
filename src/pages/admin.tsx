@@ -78,14 +78,16 @@ export default function AdminPage() {
   }, [router]);
 
   const checkAdminAccess = async () => {
-    const { data: session } = await authService.getCurrentSession();
+    const { data: { session } } = await authService.getSession();
     if (!session?.user) {
       router.push("/auth/login");
       return;
     }
 
     const { data: profile } = await profileService.getProfileById(session.user.id);
-    if (!profile?.is_admin) {
+    // Cast profile to any to bypass TS error if is_admin is not in types yet
+    const userProfile = profile as any;
+    if (!userProfile?.is_admin) {
       router.push("/");
       return;
     }
