@@ -82,6 +82,48 @@ export type Database = {
           },
         ]
       }
+      brands: {
+        Row: {
+          category: string | null
+          created_at: string | null
+          description: string | null
+          discount_info: string
+          display_order: number | null
+          id: string
+          is_active: boolean | null
+          logo_url: string | null
+          name: string
+          updated_at: string | null
+          website_url: string | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string | null
+          description?: string | null
+          discount_info: string
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          logo_url?: string | null
+          name: string
+          updated_at?: string | null
+          website_url?: string | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string | null
+          description?: string | null
+          discount_info?: string
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          logo_url?: string | null
+          name?: string
+          updated_at?: string | null
+          website_url?: string | null
+        }
+        Relationships: []
+      }
       connections: {
         Row: {
           created_at: string | null
@@ -1104,6 +1146,35 @@ export type Database = {
             foreignKeyName: "testimonials_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_qr_codes: {
+        Row: {
+          created_at: string | null
+          id: string
+          qr_code: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          qr_code: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          qr_code?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_qr_codes_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
