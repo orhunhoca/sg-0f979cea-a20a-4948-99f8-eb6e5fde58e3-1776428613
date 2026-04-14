@@ -28,7 +28,7 @@ import {
 } from "@/components/ui/navigation-menu";
 import { authService } from "@/services/authService";
 import { notificationService } from "@/services/notificationService";
-import { Bell, LogOut, User, ChevronDown, Menu, X } from "lucide-react";
+import { Bell, LogOut, User, Menu, X, ChevronDown, Instagram, Twitter, Linkedin } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { tr } from "date-fns/locale";
 import { cn } from "@/lib/utils";
@@ -230,6 +230,39 @@ export function Navigation() {
           >
             {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </Button>
+
+          {/* Social Media Links */}
+          <div className="hidden md:flex items-center gap-2">
+            <a
+              href="https://www.instagram.com/eyuboglumezunlardernegi/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-muted-foreground hover:text-primary transition-colors"
+              aria-label="Instagram"
+            >
+              <Instagram className="h-5 w-5" />
+            </a>
+            <a
+              href="https://x.com/EyubogluMD"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-muted-foreground hover:text-primary transition-colors"
+              aria-label="Twitter/X"
+            >
+              <Twitter className="h-5 w-5" />
+            </a>
+            <a
+              href="https://www.linkedin.com/in/eyüboğlu-mezunlar-derneği-578092131/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-muted-foreground hover:text-primary transition-colors"
+              aria-label="LinkedIn"
+            >
+              <Linkedin className="h-5 w-5" />
+            </a>
+          </div>
+
+          <div className="h-6 w-px bg-border hidden md:block" />
 
           {/* Notifications Bell */}
           <Popover open={notifOpen} onOpenChange={setNotifOpen}>
@@ -446,6 +479,39 @@ export function Navigation() {
             >
               Admin
             </Link>
+
+            <div className="mt-4 pt-4 border-t">
+              <div className="px-4 py-2 text-sm font-medium text-muted-foreground">Sosyal Medya</div>
+              <div className="flex items-center gap-4 px-4 py-2">
+                <a
+                  href="https://www.instagram.com/eyuboglumezunlardernegi/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-muted-foreground hover:text-primary transition-colors"
+                  aria-label="Instagram"
+                >
+                  <Instagram className="h-6 w-6" />
+                </a>
+                <a
+                  href="https://x.com/EyubogluMD"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-muted-foreground hover:text-primary transition-colors"
+                  aria-label="Twitter/X"
+                >
+                  <Twitter className="h-6 w-6" />
+                </a>
+                <a
+                  href="https://www.linkedin.com/in/eyüboğlu-mezunlar-derneği-578092131/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-muted-foreground hover:text-primary transition-colors"
+                  aria-label="LinkedIn"
+                >
+                  <Linkedin className="h-6 w-6" />
+                </a>
+              </div>
+            </div>
           </div>
         </div>
       )}
