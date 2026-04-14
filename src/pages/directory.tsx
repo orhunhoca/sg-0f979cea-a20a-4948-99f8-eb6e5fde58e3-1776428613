@@ -2,16 +2,17 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { SEO } from "@/components/SEO";
 import { Navigation } from "@/components/Navigation";
-import { Card, CardContent, CardDescription, CardHeader } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import { authService } from "@/services/authService";
 import { profileService, type Profile, type SearchFilters } from "@/services/profileService";
-import { Loader2, Search, MapPin, Briefcase, GraduationCap, Building, Filter } from "lucide-react";
+import { Loader2, Search, MapPin, Briefcase, GraduationCap, Building, Filter, MessageSquare, Mail, Phone, Linkedin, Twitter, Instagram, Facebook, Globe } from "lucide-react";
 
 export default function DirectoryPage() {
   const router = useRouter();
@@ -30,8 +31,13 @@ export default function DirectoryPage() {
   });
   const [members, setMembers] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [yearFilter, setYearFilter] = useState("all");
+  const [yearFilter, setYearFilter] = useState("all"); // University graduation year
+  const [highSchoolYearFilter, setHighSchoolYearFilter] = useState("all");
   const [cityFilter, setCityFilter] = useState("all");
+  const [countryFilter, setCountryFilter] = useState("all");
+  const [universityFilter, setUniversityFilter] = useState("all");
+  const [professionFilter, setProfessionFilter] = useState("all");
+  const [companyFilter, setCompanyFilter] = useState("all");
 
   useEffect(() => {
     checkAuth();
@@ -41,11 +47,41 @@ export default function DirectoryPage() {
     const currentUser = await authService.getCurrentUser();
     if (!currentUser) {
       router.push("/auth/login");
-      return;
+    } else {
+      setUser(currentUser);
+      loadMembers();
+      setLoading(false);
     }
-    setUser(currentUser);
-    loadData();
   };
+
+  const loadMembers = async () => {
+    const { data, error } = await profileService.getAllProfiles();
+    if (!error && data) {
+      setMembers(data);
+    }
+  };
+
+  const filteredMembers = members.filter((member) => {
+    const matchesSearch = 
+      member.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      member.department?.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    const matchesYear = yearFilter === "all" || yearFilter === "" || member.graduation_year?.toString() === yearFilter;
+    const matchesHighSchoolYear = highSchoolYearFilter === "all" || highSchoolYearFilter === "" || member.high_school_graduation_year?.toString() === highSchoolYearFilter;
+    const matchesCity = cityFilter === "all" || cityFilter === "" || member.city === cityFilter;
+    const matchesCountry = countryFilter === "all" || countryFilter === "" || member.country === countryFilter;
+    const matchesUniversity = universityFilter === "all" || universityFilter === "" || member.university?.toLowerCase().includes(universityFilter.toLowerCase());
+    const matchesProfession = professionFilter === "all" || professionFilter === "" || member.profession?.toLowerCase().includes(professionFilter.toLowerCase());
+    const matchesCompany = companyFilter === "all" || companyFilter === "" || member.company?.toLowerCase().includes(companyFilter.toLowerCase());
+
+    return matchesSearch && matchesYear && matchesHighSchoolYear && matchesCity && matchesCountry && matchesUniversity && matchesProfession && matchesCompany;
+  });
+
+  // Extract unique values for dropdowns
+  const uniqueUniversities = Array.from(new Set(members.map(m => m.university).filter(Boolean)));
+  const uniqueProfessions = Array.from(new Set(members.map(m => m.profession).filter(Boolean)));
+  const uniqueCompanies = Array.from(new Set(members.map(m => m.company).filter(Boolean)));
+  const uniqueCountries = Array.from(new Set(members.map(m => m.country).filter(Boolean)));
 
   const loadData = async () => {
     setSearching(true);
@@ -106,117 +142,149 @@ export default function DirectoryPage() {
           </div>
 
           {/* Search and Filters */}
-          <Card className="mb-8">
+          <Card className="h-fit">
             <CardHeader>
-              <div className="flex items-center gap-2">
+              <CardTitle className="text-lg flex items-center gap-2">
                 <Filter className="h-5 w-5" />
-                <h2 className="text-xl font-heading font-semibold">Arama ve Filtreler</h2>
-              </div>
+                Filtreler
+              </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
-                <div className="lg:col-span-3 space-y-2">
-                  <Label htmlFor="search">
-                    <Search className="h-4 w-4 inline mr-2" />
-                    İsim veya E-posta Ara
-                  </Label>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="search">İsim veya Bölüm Ara</Label>
+                <div className="relative">
+                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                   <Input
                     id="search"
                     placeholder="Ara..."
-                    value={filters.searchTerm}
-                    onChange={(e) => setFilters({ ...filters, searchTerm: e.target.value })}
-                    onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+                    className="pl-8"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
                   />
                 </div>
+              </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="year-filter">Mezuniyet Yılı</Label>
-                  <Select value={yearFilter} onValueChange={setYearFilter}>
-                    <SelectTrigger id="year-filter">
-                      <SelectValue placeholder="Tüm yıllar" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Tümü</SelectItem>
-                      {Array.from({ length: 50 }, (_, i) => new Date().getFullYear() - i).map(
-                        (year) => (
-                          <SelectItem key={year} value={year.toString()}>
-                            {year}
-                          </SelectItem>
-                        )
-                      )}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="department">Bölüm</Label>
-                  <Select
-                    value={filters.department}
-                    onValueChange={(value) => setFilters({ ...filters, department: value })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Bölüm seçin" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="">Tümü</SelectItem>
-                      {departments.map((dept) => (
-                        <SelectItem key={dept} value={dept}>
-                          {dept}
+              <div className="space-y-2">
+                <Label htmlFor="hs-year-filter">Lise Mezuniyet Yılı</Label>
+                <Select value={highSchoolYearFilter} onValueChange={setHighSchoolYearFilter}>
+                  <SelectTrigger id="hs-year-filter">
+                    <SelectValue placeholder="Tüm yıllar" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Tümü</SelectItem>
+                    {Array.from({ length: 50 }, (_, i) => new Date().getFullYear() - i).map(
+                      (year) => (
+                        <SelectItem key={year} value={year.toString()}>
+                          {year}
                         </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="city-filter">Şehir</Label>
-                  <Select value={cityFilter} onValueChange={setCityFilter}>
-                    <SelectTrigger id="city-filter">
-                      <SelectValue placeholder="Tüm şehirler" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Tümü</SelectItem>
-                      <SelectItem value="İstanbul">İstanbul</SelectItem>
-                      <SelectItem value="Ankara">Ankara</SelectItem>
-                      <SelectItem value="İzmir">İzmir</SelectItem>
-                      <SelectItem value="Bursa">Bursa</SelectItem>
-                      <SelectItem value="Antalya">Antalya</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="profession">
-                    <Briefcase className="h-4 w-4 inline mr-2" />
-                    Meslek
-                  </Label>
-                  <Input
-                    id="profession"
-                    placeholder="Örn: Mühendis"
-                    value={filters.profession}
-                    onChange={(e) => setFilters({ ...filters, profession: e.target.value })}
-                  />
-                </div>
+                      )
+                    )}
+                  </SelectContent>
+                </Select>
               </div>
 
-              <div className="flex gap-3">
-                <Button onClick={handleSearch} disabled={searching}>
-                  {searching ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Aranıyor...
-                    </>
-                  ) : (
-                    <>
-                      <Search className="mr-2 h-4 w-4" />
-                      Ara
-                    </>
-                  )}
-                </Button>
-                <Button variant="outline" onClick={clearFilters}>
-                  Filtreleri Temizle
-                </Button>
+              <div className="space-y-2">
+                <Label htmlFor="country-filter">Ülke</Label>
+                <Select value={countryFilter} onValueChange={setCountryFilter}>
+                  <SelectTrigger id="country-filter">
+                    <SelectValue placeholder="Tüm ülkeler" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Tümü</SelectItem>
+                    {uniqueCountries.map((country: any) => (
+                      <SelectItem key={country} value={country}>
+                        {country}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="city-filter">Şehir</Label>
+                <Select value={cityFilter} onValueChange={setCityFilter}>
+                  <SelectTrigger id="city-filter">
+                    <SelectValue placeholder="Tüm şehirler" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Tümü</SelectItem>
+                    <SelectItem value="İstanbul">İstanbul</SelectItem>
+                    <SelectItem value="Ankara">Ankara</SelectItem>
+                    <SelectItem value="İzmir">İzmir</SelectItem>
+                    <SelectItem value="Bursa">Bursa</SelectItem>
+                    <SelectItem value="Antalya">Antalya</SelectItem>
+                    <SelectItem value="Yurtdışı">Yurtdışı</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="uni-filter">Üniversite</Label>
+                <Select value={universityFilter} onValueChange={setUniversityFilter}>
+                  <SelectTrigger id="uni-filter">
+                    <SelectValue placeholder="Tüm üniversiteler" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Tümü</SelectItem>
+                    {uniqueUniversities.map((uni: any) => (
+                      <SelectItem key={uni} value={uni}>
+                        {uni}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="profession-filter">Meslek</Label>
+                <Select value={professionFilter} onValueChange={setProfessionFilter}>
+                  <SelectTrigger id="profession-filter">
+                    <SelectValue placeholder="Tüm meslekler" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Tümü</SelectItem>
+                    {uniqueProfessions.map((prof: any) => (
+                      <SelectItem key={prof} value={prof}>
+                        {prof}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="company-filter">Şirket</Label>
+                <Select value={companyFilter} onValueChange={setCompanyFilter}>
+                  <SelectTrigger id="company-filter">
+                    <SelectValue placeholder="Tüm şirketler" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Tümü</SelectItem>
+                    {uniqueCompanies.map((comp: any) => (
+                      <SelectItem key={comp} value={comp}>
+                        {comp}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <Button 
+                variant="outline" 
+                className="w-full"
+                onClick={() => {
+                  setSearchQuery("");
+                  setYearFilter("all");
+                  setHighSchoolYearFilter("all");
+                  setCityFilter("all");
+                  setCountryFilter("all");
+                  setUniversityFilter("all");
+                  setProfessionFilter("all");
+                  setCompanyFilter("all");
+                }}
+              >
+                Filtreleri Temizle
+              </Button>
             </CardContent>
           </Card>
 
@@ -285,9 +353,110 @@ export default function DirectoryPage() {
                         </Badge>
                       )}
                     </div>
-                    <Button variant="outline" className="w-full mt-3">
-                      Profili Görüntüle
-                    </Button>
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button variant="outline" className="w-full mt-3">
+                          Profili Görüntüle
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Üye Profili</DialogTitle>
+                          <DialogDescription>
+                            {person.full_name} isimli üyenin detaylı profil bilgileri.
+                          </DialogDescription>
+                        </DialogHeader>
+                        <div className="flex flex-col items-center gap-4 py-4">
+                          <Avatar className="h-24 w-24">
+                            <AvatarImage src={person.avatar_url} />
+                            <AvatarFallback className="text-2xl bg-primary text-primary-foreground">
+                              {person.full_name?.charAt(0).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="text-center space-y-1">
+                            <h2 className="text-xl font-bold">{person.full_name}</h2>
+                            <p className="text-muted-foreground">
+                              {person.profession} {person.company && `at ${person.company}`}
+                            </p>
+                            <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+                              <MapPin className="h-4 w-4" />
+                              {person.city}{person.country && `, ${person.country}`}
+                            </div>
+                          </div>
+                          
+                          {person.bio && (
+                            <div className="w-full bg-muted/50 p-4 rounded-lg text-sm text-center">
+                              "{person.bio}"
+                            </div>
+                          )}
+
+                          <div className="w-full space-y-4">
+                            <div className="grid grid-cols-2 gap-4">
+                              {person.high_school_graduation_year && (
+                                <div className="space-y-1">
+                                  <div className="text-sm font-medium text-muted-foreground flex items-center gap-1"><GraduationCap className="h-4 w-4"/> Lise Mezuniyet</div>
+                                  <div className="text-sm">{person.high_school_graduation_year}</div>
+                                </div>
+                              )}
+                              {person.university && (
+                                <div className="space-y-1">
+                                  <div className="text-sm font-medium text-muted-foreground flex items-center gap-1"><GraduationCap className="h-4 w-4"/> Üniversite</div>
+                                  <div className="text-sm">{person.university} {person.university_status === 'studying' ? '(Okuyor)' : '(Mezun)'}</div>
+                                </div>
+                              )}
+                              {person.profession && (
+                                <div className="space-y-1">
+                                  <div className="text-sm font-medium text-muted-foreground flex items-center gap-1"><Briefcase className="h-4 w-4"/> Meslek</div>
+                                  <div className="text-sm">{person.profession}</div>
+                                </div>
+                              )}
+                              {person.company && (
+                                <div className="space-y-1">
+                                  <div className="text-sm font-medium text-muted-foreground flex items-center gap-1"><Briefcase className="h-4 w-4"/> Şirket</div>
+                                  <div className="text-sm">{person.company}</div>
+                                </div>
+                              )}
+                            </div>
+
+                            <div className="border-t pt-4 space-y-3">
+                              <h4 className="text-sm font-medium flex items-center gap-2"><Globe className="h-4 w-4"/> İletişim & Sosyal Medya</h4>
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                {person.email && (
+                                  <a href={`mailto:${person.email}`} className="flex items-center gap-2 text-sm text-blue-600 hover:underline">
+                                    <Mail className="h-4 w-4" /> {person.email}
+                                  </a>
+                                )}
+                                {person.phone && (
+                                  <a href={`tel:${person.phone}`} className="flex items-center gap-2 text-sm text-blue-600 hover:underline">
+                                    <Phone className="h-4 w-4" /> {person.phone}
+                                  </a>
+                                )}
+                                {person.linkedin_url && (
+                                  <a href={person.linkedin_url} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-sm text-blue-600 hover:underline">
+                                    <Linkedin className="h-4 w-4" /> LinkedIn
+                                  </a>
+                                )}
+                                {person.twitter_url && (
+                                  <a href={person.twitter_url} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-sm text-blue-600 hover:underline">
+                                    <Twitter className="h-4 w-4" /> Twitter
+                                  </a>
+                                )}
+                                {person.instagram_url && (
+                                  <a href={person.instagram_url} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-sm text-blue-600 hover:underline">
+                                    <Instagram className="h-4 w-4" /> Instagram
+                                  </a>
+                                )}
+                                {person.facebook_url && (
+                                  <a href={person.facebook_url} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-sm text-blue-600 hover:underline">
+                                    <Facebook className="h-4 w-4" /> Facebook
+                                  </a>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
                   </CardContent>
                 </Card>
               ))}

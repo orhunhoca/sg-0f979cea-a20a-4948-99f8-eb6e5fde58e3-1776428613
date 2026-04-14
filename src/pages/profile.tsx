@@ -55,13 +55,13 @@ export default function ProfilePage() {
       router.push("/auth/login");
     } else {
       setUser(currentUser);
-      await loadProfile();
+      await loadProfile(currentUser);
       setLoading(false);
     }
   };
 
-  const loadProfile = async () => {
-    const { data, error } = await profileService.getProfile(user.id);
+  const loadProfile = async (currentUser: any) => {
+    const { data, error } = await profileService.getMyProfile();
     if (!error && data) {
       setFullName(data.full_name || "");
       setBio(data.bio || "");
@@ -91,7 +91,7 @@ export default function ProfilePage() {
     e.preventDefault();
     setSaving(true);
 
-    const { error } = await profileService.updateProfile(user.id, {
+    const { error } = await profileService.updateMyProfile({
       full_name: fullName,
       bio: bio || null,
       avatar_url: avatarUrl || null,
