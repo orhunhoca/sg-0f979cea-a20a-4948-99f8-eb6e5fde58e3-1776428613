@@ -39,6 +39,13 @@ import {
   TabsContent,
 } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface MembershipRecord {
   id: string;
@@ -52,15 +59,10 @@ interface MembershipRecord {
 export default function AdminPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const [user, setUser] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [uploading, setUploading] = useState(false);
-  const [memberships, setMemberships] = useState<MembershipRecord[]>([]);
-  const [file, setFile] = useState<File | null>(null);
   const [activeTab, setActiveTab] = useState<"users" | "roles" | "brands">("users");
   const [users, setUsers] = useState<any[]>([]);
   const [brands, setBrands] = useState<any[]>([]);
-  const [editingUser, setEditingUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
   const [editingBrand, setEditingBrand] = useState<any>(null);
   const [newBrand, setNewBrand] = useState({
     name: "",
