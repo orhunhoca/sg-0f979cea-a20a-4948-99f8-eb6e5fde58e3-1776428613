@@ -33,8 +33,13 @@ export default function Home() {
   }, []);
 
   const checkUser = async () => {
-    const { data } = await authService.getCurrentSession();
-    setUser(data?.session?.user || null);
+    try {
+      const { data } = await authService.getCurrentSession();
+      // @ts-ignore - Handle possible type mismatch
+      setUser(data?.session?.user || data?.user || null);
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   const menuItems = [
