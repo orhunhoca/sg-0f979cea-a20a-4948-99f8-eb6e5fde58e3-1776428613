@@ -5,71 +5,44 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  if (req.method !== "GET") {
-    return res.status(405).json({ valid: false, message: "Method not allowed" });
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Method not allowed" });
   }
 
-  const numberParam = req.query.number;
-  const emailParam = req.query.email;
+  const { email, membershipNumber } = req.body;
 
-  const number = Array.isArray(numberParam) ? numberParam[0] : numberParam;
-  const email = Array.isArray(emailParam) ? emailParam[0] : emailParam;
-
-  console.log("=== VALIDATION API CALLED ===");
-  console.log("Number:", number);
-  console.log("Email:", email);
-
-  if (!number || !email) {
-    return res.status(400).json({ 
-      valid: false, 
-      message: "Üyelik numarası ve e-posta gerekli" 
-    });
+  if (!email || !membershipNumber) {
+    return res.status(400).json({ error: "Email and membership number required" });
   }
 
   try {
-    const { data, error } = await supabase
+    // Check membership_numbers table for match
+    const { data: memberData, error } = await supabase
       .from("membership_numbers")
       .select("*")
-      .eq("membership_number", number)
-      .eq("email", email)
-      .maybeSingle();
+      .eq("email", email.toLowerCase())
+      .eq("membership_number", membershipNumber)
+      .eq("is_used", false)
+      .single();
 
-    console.log("Query result:", { data, error });
+    console.log("Membership validation:", { email, membershipNumber, memberData, error });
 
-    if (error) {
-      console.error("Database error:", error);
-      return res.status(500).json({ 
+    if (error || !memberData) {
+      return res.status(404).json({ 
         valid: false, 
-        message: `Sunucu hatası: ${error.message}` 
+        message: "Bu email ve üyelik numarası kombinasyonu bulunamadı veya daha önce kullanılmış." 
       });
     }
 
-    if (!data) {
-      console.log("No matching record found");
-      return res.status(200).json({ 
-        valid: false, 
-        message: "Üyelik numarası veya e-posta eşleşmiyor" 
-      });
-    }
-
-    if (data.is_used) {
-      console.log("Record already used");
-      return res.status(200).json({ 
-        valid: false, 
-        message: "Bu üyelik numarası zaten kullanılmış" 
-      });
-    }
-
-    console.log("Validation successful!");
+    // Return the full name from the membership record
     return res.status(200).json({ 
       valid: true, 
-      fullName: data.full_name 
+      fullName: memberData.full_name,
+      message: "Üyelik doğrulandı!" 
     });
-  } catch (error: any) {
-    console.error("Unexpected error:", error);
-    return res.status(500).json({ 
-      valid: false, 
-      message: `Beklenmeyen hata: ${error.message}` 
-    });
+
+  } catch (err: any) {
+    console.error("Validation error:", err);
+    return res.status(500).json({ error: err.message });
   }
 }
