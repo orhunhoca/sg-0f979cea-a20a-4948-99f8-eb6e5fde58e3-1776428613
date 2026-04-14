@@ -1,18 +1,56 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 
-export type Profile = Tables<"profiles">;
+export interface Profile {
+  id: string;
+  email: string;
+  full_name: string | null;
+  avatar_url: string | null;
+  bio: string | null;
+  graduation_year: number | null;
+  high_school_graduation_year: number | null;
+  department: string | null;
+  university: string | null;
+  university_status: string | null;
+  university_graduation_year: number | null;
+  profession: string | null;
+  company: string | null;
+  country: string | null;
+  city: string | null;
+  phone: string | null;
+  linkedin_url: string | null;
+  twitter_url: string | null;
+  instagram_url: string | null;
+  facebook_url: string | null;
+  is_mentor: boolean;
+  mentor_bio: string | null;
+  mentorship_areas: string[] | null;
+  created_at: string;
+  updated_at: string;
+}
 
 export interface ProfileUpdate {
   full_name?: string;
-  phone?: string;
-  graduation_year?: number;
-  department?: string;
-  profession?: string;
-  company?: string;
-  city?: string;
-  bio?: string;
-  avatar_url?: string;
+  avatar_url?: string | null;
+  bio?: string | null;
+  graduation_year?: number | null;
+  high_school_graduation_year?: number | null;
+  department?: string | null;
+  university?: string | null;
+  university_status?: string | null;
+  university_graduation_year?: number | null;
+  profession?: string | null;
+  company?: string | null;
+  country?: string | null;
+  city?: string | null;
+  phone?: string | null;
+  linkedin_url?: string | null;
+  twitter_url?: string | null;
+  instagram_url?: string | null;
+  facebook_url?: string | null;
+  is_mentor?: boolean;
+  mentor_bio?: string | null;
+  mentorship_areas?: string[] | null;
 }
 
 export interface SearchFilters {
@@ -204,6 +242,22 @@ export const profileService = {
     } catch (error: any) {
       console.error("Upload avatar error:", error);
       return { data: null, error };
+    }
+  },
+
+  // Get all profiles
+  async getAllProfiles(): Promise<{ data: Profile[]; error: any }> {
+    try {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      console.log("Get all profiles:", { data, error });
+      return { data: data || [], error };
+    } catch (error: any) {
+      console.error("Get all profiles error:", error);
+      return { data: [], error };
     }
   },
 };
