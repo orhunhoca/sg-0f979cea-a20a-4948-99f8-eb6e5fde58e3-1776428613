@@ -15,7 +15,8 @@ import {
   UserPlus, 
   MessageSquare,
   UsersRound,
-  Award
+  Award,
+  Tag
 } from "lucide-react";
 import Link from "next/link";
 
@@ -120,11 +121,19 @@ export default function HomePage() {
     },
     {
       title: "Üyelik",
-      description: "Üye olun veya aidat ödeyin",
+      description: "Derneğe üye olun",
       icon: UserPlus,
       href: "/fonzip-signup",
-      color: "from-cyan-500 to-cyan-600",
-      iconColor: "text-cyan-600",
+      gradient: "from-cyan-500 to-cyan-600",
+      iconBg: "bg-gradient-to-br from-cyan-400 to-cyan-600",
+    },
+    {
+      title: "İndirimli Markalar",
+      description: "Anlaşmalı markalardan indirim",
+      icon: Tag,
+      href: "/brands",
+      gradient: "from-emerald-500 to-emerald-600",
+      iconBg: "bg-gradient-to-br from-emerald-400 to-emerald-600",
     },
   ];
 
