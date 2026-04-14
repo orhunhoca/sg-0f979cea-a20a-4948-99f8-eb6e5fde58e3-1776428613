@@ -7,6 +7,7 @@ import { Navigation } from "@/components/Navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { authService } from "@/services/authService";
+import { supabase } from "@/integrations/supabase/client";
 import { 
   Users, 
   Calendar, 
@@ -34,9 +35,8 @@ export default function Home() {
 
   const checkUser = async () => {
     try {
-      const { data } = await authService.getCurrentSession();
-      // @ts-ignore - Handle possible type mismatch
-      setUser(data?.session?.user || data?.user || null);
+      const { data: { session } } = await supabase.auth.getSession();
+      setUser(session?.user || null);
     } catch (e) {
       console.error(e);
     }
