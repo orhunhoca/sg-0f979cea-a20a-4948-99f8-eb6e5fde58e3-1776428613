@@ -1,4 +1,5 @@
 import { MapPin, Phone, Mail, Instagram, Twitter, Linkedin, MessageCircle } from "lucide-react";
+import Link from "next/link";
 
 export function Footer() {
   return (
@@ -47,29 +48,29 @@ export function Footer() {
             <h3 className="text-white font-semibold text-lg">Hızlı Erişim</h3>
             <ul className="space-y-2">
               <li>
-                <a href="/about/baskanin-mesaji" className="text-sm hover:text-white transition-colors">
+                <Link href="/about/baskanin-mesaji" className="text-sm hover:text-white transition-colors">
                   Başkanın Mesajı
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="/about/yonetim-kurulu" className="text-sm hover:text-white transition-colors">
+                <Link href="/about/yonetim-kurulu" className="text-sm hover:text-white transition-colors">
                   Yönetim Kurulu
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="/directory" className="text-sm hover:text-white transition-colors">
+                <Link href="/directory" className="text-sm hover:text-white transition-colors">
                   Mezun Dizini
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="/events" className="text-sm hover:text-white transition-colors">
+                <Link href="/events" className="text-sm hover:text-white transition-colors">
                   Etkinlikler
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="/fonzip-signup" className="text-sm hover:text-white transition-colors">
+                <Link href="/fonzip-signup" className="text-sm hover:text-white transition-colors">
                   Üyelik
-                </a>
+                </Link>
               </li>
             </ul>
           </div>
