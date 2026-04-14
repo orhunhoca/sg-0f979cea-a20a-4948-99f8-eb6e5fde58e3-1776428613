@@ -129,6 +129,15 @@ export function Navigation() {
             <Link href="/jobs" className="text-sm font-medium hover:text-primary transition-colors">
               İş İlanları
             </Link>
+            <Link href="/gallery" className="text-sm font-medium hover:text-primary transition-colors">
+              Galeri
+            </Link>
+            <Link href="/news" className="text-sm font-medium hover:text-primary transition-colors">
+              Haberler
+            </Link>
+            <Link href="/testimonials" className="text-sm font-medium hover:text-primary transition-colors">
+              Başarılı Mezunlar
+            </Link>
             <Link href="/groups" className="text-sm font-medium hover:text-primary transition-colors">
               Gruplar
             </Link>

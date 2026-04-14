@@ -526,6 +526,95 @@ export type Database = {
           },
         ]
       }
+      media_gallery: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          likes_count: number | null
+          media_type: string
+          media_url: string
+          tags: string[] | null
+          thumbnail_url: string | null
+          title: string
+          updated_at: string | null
+          user_id: string
+          year: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          likes_count?: number | null
+          media_type: string
+          media_url: string
+          tags?: string[] | null
+          thumbnail_url?: string | null
+          title: string
+          updated_at?: string | null
+          user_id: string
+          year?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          likes_count?: number | null
+          media_type?: string
+          media_url?: string
+          tags?: string[] | null
+          thumbnail_url?: string | null
+          title?: string
+          updated_at?: string | null
+          user_id?: string
+          year?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "media_gallery_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      media_likes: {
+        Row: {
+          created_at: string | null
+          id: string
+          media_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          media_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          media_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "media_likes_media_id_fkey"
+            columns: ["media_id"]
+            isOneToOne: false
+            referencedRelation: "media_gallery"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "media_likes_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       membership_numbers: {
         Row: {
           created_at: string | null
@@ -645,6 +734,50 @@ export type Database = {
           {
             foreignKeyName: "messages_sender_id_fkey"
             columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      news: {
+        Row: {
+          author_id: string
+          content: string
+          cover_image_url: string | null
+          created_at: string | null
+          id: string
+          published: boolean | null
+          title: string
+          updated_at: string | null
+          views_count: number | null
+        }
+        Insert: {
+          author_id: string
+          content: string
+          cover_image_url?: string | null
+          created_at?: string | null
+          id?: string
+          published?: boolean | null
+          title: string
+          updated_at?: string | null
+          views_count?: number | null
+        }
+        Update: {
+          author_id?: string
+          content?: string
+          cover_image_url?: string | null
+          created_at?: string | null
+          id?: string
+          published?: boolean | null
+          title?: string
+          updated_at?: string | null
+          views_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "news_author_id_fkey"
+            columns: ["author_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
@@ -927,6 +1060,50 @@ export type Database = {
             foreignKeyName: "roles_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      testimonials: {
+        Row: {
+          achievement: string | null
+          approved: boolean | null
+          created_at: string | null
+          current_position: string | null
+          featured: boolean | null
+          id: string
+          quote: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          achievement?: string | null
+          approved?: boolean | null
+          created_at?: string | null
+          current_position?: string | null
+          featured?: boolean | null
+          id?: string
+          quote: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          achievement?: string | null
+          approved?: boolean | null
+          created_at?: string | null
+          current_position?: string | null
+          featured?: boolean | null
+          id?: string
+          quote?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "testimonials_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
