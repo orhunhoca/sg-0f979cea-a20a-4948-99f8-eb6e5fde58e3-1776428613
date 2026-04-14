@@ -8,9 +8,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { authService } from "@/services/authService";
+import { profileService } from "@/services/profileService";
+import { brandService } from "@/services/brandService";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Upload, Trash2, Users, Download, CheckCircle2, XCircle } from "lucide-react";
+import { Loader2, Upload, Trash2, Users, Download, CheckCircle2, XCircle, Save, X, Tag, Plus, Edit2, Eye, EyeOff, Shield } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -30,6 +32,13 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  Tabs,
+  TabsList,
+  TabsTrigger,
+  TabsContent,
+} from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
 
 interface MembershipRecord {
   id: string;
@@ -48,20 +57,52 @@ export default function AdminPage() {
   const [uploading, setUploading] = useState(false);
   const [memberships, setMemberships] = useState<MembershipRecord[]>([]);
   const [file, setFile] = useState<File | null>(null);
+  const [activeTab, setActiveTab] = useState<"users" | "roles" | "brands">("users");
+  const [users, setUsers] = useState<any[]>([]);
+  const [brands, setBrands] = useState<any[]>([]);
+  const [editingUser, setEditingUser] = useState<any>(null);
+  const [editingBrand, setEditingBrand] = useState<any>(null);
+  const [newBrand, setNewBrand] = useState({
+    name: "",
+    category: "Diğer",
+    description: "",
+    discount_info: "",
+    logo_url: "",
+    website_url: "",
+    is_active: true,
+    display_order: 0,
+  });
 
   useEffect(() => {
-    checkAuth();
-  }, []);
+    checkAdminAccess();
+  }, [router]);
 
-  const checkAuth = async () => {
-    const currentUser = await authService.getCurrentUser();
-    if (!currentUser) {
+  const checkAdminAccess = async () => {
+    const { data: { user } } = await authService.getSession();
+    if (!user) {
       router.push("/auth/login");
-    } else {
-      setUser(currentUser);
-      loadMemberships();
-      setLoading(false);
+      return;
     }
+
+    const { data: profile } = await profileService.getProfile(user.id);
+    if (!profile?.is_admin) {
+      router.push("/");
+      return;
+    }
+
+    loadUsers();
+    loadBrands();
+  };
+
+  const loadUsers = async () => {
+    const { data } = await profileService.getAllProfiles();
+    if (data) setUsers(data);
+    setLoading(false);
+  };
+
+  const loadBrands = async () => {
+    const { data } = await brandService.getAllBrands();
+    if (data) setBrands(data);
   };
 
   const loadMemberships = async () => {
@@ -199,6 +240,89 @@ export default function AdminPage() {
     a.download = "membership_template.csv";
     a.click();
     window.URL.revokeObjectURL(url);
+  };
+
+  const handleRoleUpdate = async (userId: string, newRole: string) => {
+    const updates: any = {};
+    
+    if (newRole === "admin") {
+      updates.is_admin = true;
+      updates.is_moderator = false;
+    } else if (newRole === "moderator") {
+      updates.is_admin = false;
+      updates.is_moderator = true;
+    } else {
+      updates.is_admin = false;
+      updates.is_moderator = false;
+    }
+
+    const { error } = await profileService.updateProfile(userId, updates);
+    if (!error) {
+      toast({ title: "Rol güncellendi" });
+      loadUsers();
+    } else {
+      toast({ title: "Hata", description: error.message, variant: "destructive" });
+    }
+  };
+
+  const handleCreateBrand = async () => {
+    if (!newBrand.name || !newBrand.discount_info) {
+      toast({ title: "Hata", description: "Marka adı ve indirim bilgisi gerekli", variant: "destructive" });
+      return;
+    }
+
+    const { error } = await brandService.createBrand(newBrand);
+    if (!error) {
+      toast({ title: "Marka eklendi" });
+      setNewBrand({
+        name: "",
+        category: "Diğer",
+        description: "",
+        discount_info: "",
+        logo_url: "",
+        website_url: "",
+        is_active: true,
+        display_order: 0,
+      });
+      loadBrands();
+    } else {
+      toast({ title: "Hata", description: error.message, variant: "destructive" });
+    }
+  };
+
+  const handleUpdateBrand = async () => {
+    if (!editingBrand) return;
+
+    const { error } = await brandService.updateBrand(editingBrand.id, editingBrand);
+    if (!error) {
+      toast({ title: "Marka güncellendi" });
+      setEditingBrand(null);
+      loadBrands();
+    } else {
+      toast({ title: "Hata", description: error.message, variant: "destructive" });
+    }
+  };
+
+  const handleDeleteBrand = async (id: string) => {
+    if (!confirm("Bu markayı silmek istediğinizden emin misiniz?")) return;
+
+    const { error } = await brandService.deleteBrand(id);
+    if (!error) {
+      toast({ title: "Marka silindi" });
+      loadBrands();
+    } else {
+      toast({ title: "Hata", description: error.message, variant: "destructive" });
+    }
+  };
+
+  const handleToggleBrand = async (id: string, isActive: boolean) => {
+    const { error } = await brandService.toggleBrandStatus(id, isActive);
+    if (!error) {
+      toast({ title: isActive ? "Marka aktif edildi" : "Marka pasif edildi" });
+      loadBrands();
+    } else {
+      toast({ title: "Hata", description: error.message, variant: "destructive" });
+    }
   };
 
   if (loading) {
@@ -381,6 +505,210 @@ export default function AdminPage() {
                 </div>
               </CardContent>
             </Card>
+
+            {/* Brands Tab */}
+            <TabsContent value="brands" className="space-y-6">
+              {/* Add New Brand */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Plus className="h-5 w-5" />
+                    Yeni Marka Ekle
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Marka Adı *</label>
+                      <Input
+                        value={newBrand.name}
+                        onChange={(e) => setNewBrand({ ...newBrand, name: e.target.value })}
+                        placeholder="Örn: Starbucks"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Kategori</label>
+                      <select
+                        value={newBrand.category}
+                        onChange={(e) => setNewBrand({ ...newBrand, category: e.target.value })}
+                        className="w-full px-3 py-2 border rounded-md"
+                      >
+                        <option value="Yeme-İçme">Yeme-İçme</option>
+                        <option value="Giyim">Giyim</option>
+                        <option value="Teknoloji">Teknoloji</option>
+                        <option value="Sağlık">Sağlık</option>
+                        <option value="Eğitim">Eğitim</option>
+                        <option value="Diğer">Diğer</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Açıklama</label>
+                    <Textarea
+                      value={newBrand.description}
+                      onChange={(e) => setNewBrand({ ...newBrand, description: e.target.value })}
+                      placeholder="Marka hakkında kısa bilgi"
+                      rows={2}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">İndirim Bilgisi *</label>
+                    <Input
+                      value={newBrand.discount_info}
+                      onChange={(e) => setNewBrand({ ...newBrand, discount_info: e.target.value })}
+                      placeholder="Örn: %15 indirim"
+                    />
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Logo URL</label>
+                      <Input
+                        value={newBrand.logo_url}
+                        onChange={(e) => setNewBrand({ ...newBrand, logo_url: e.target.value })}
+                        placeholder="https://example.com/logo.png"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Website URL</label>
+                      <Input
+                        value={newBrand.website_url}
+                        onChange={(e) => setNewBrand({ ...newBrand, website_url: e.target.value })}
+                        placeholder="https://example.com"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Sıralama</label>
+                    <Input
+                      type="number"
+                      value={newBrand.display_order}
+                      onChange={(e) => setNewBrand({ ...newBrand, display_order: parseInt(e.target.value) || 0 })}
+                      placeholder="0"
+                    />
+                  </div>
+                  <Button onClick={handleCreateBrand} className="w-full">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Marka Ekle
+                  </Button>
+                </CardContent>
+              </Card>
+
+              {/* Existing Brands */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Mevcut Markalar ({brands.length})</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {brands.length === 0 ? (
+                    <p className="text-center text-muted-foreground py-8">Henüz marka eklenmemiş</p>
+                  ) : (
+                    <div className="space-y-4">
+                      {brands.map((brand) => (
+                        <Card key={brand.id}>
+                          <CardContent className="pt-6">
+                            {editingBrand?.id === brand.id ? (
+                              <div className="space-y-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                  <Input
+                                    value={editingBrand.name}
+                                    onChange={(e) => setEditingBrand({ ...editingBrand, name: e.target.value })}
+                                    placeholder="Marka Adı"
+                                  />
+                                  <select
+                                    value={editingBrand.category}
+                                    onChange={(e) => setEditingBrand({ ...editingBrand, category: e.target.value })}
+                                    className="px-3 py-2 border rounded-md"
+                                  >
+                                    <option value="Yeme-İçme">Yeme-İçme</option>
+                                    <option value="Giyim">Giyim</option>
+                                    <option value="Teknoloji">Teknoloji</option>
+                                    <option value="Sağlık">Sağlık</option>
+                                    <option value="Eğitim">Eğitim</option>
+                                    <option value="Diğer">Diğer</option>
+                                  </select>
+                                </div>
+                                <Textarea
+                                  value={editingBrand.description || ""}
+                                  onChange={(e) => setEditingBrand({ ...editingBrand, description: e.target.value })}
+                                  placeholder="Açıklama"
+                                  rows={2}
+                                />
+                                <Input
+                                  value={editingBrand.discount_info}
+                                  onChange={(e) => setEditingBrand({ ...editingBrand, discount_info: e.target.value })}
+                                  placeholder="İndirim Bilgisi"
+                                />
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                  <Input
+                                    value={editingBrand.logo_url || ""}
+                                    onChange={(e) => setEditingBrand({ ...editingBrand, logo_url: e.target.value })}
+                                    placeholder="Logo URL"
+                                  />
+                                  <Input
+                                    value={editingBrand.website_url || ""}
+                                    onChange={(e) => setEditingBrand({ ...editingBrand, website_url: e.target.value })}
+                                    placeholder="Website URL"
+                                  />
+                                </div>
+                                <div className="flex gap-2">
+                                  <Button onClick={handleUpdateBrand} size="sm">
+                                    <Save className="h-4 w-4 mr-2" />
+                                    Kaydet
+                                  </Button>
+                                  <Button onClick={() => setEditingBrand(null)} size="sm" variant="outline">
+                                    <X className="h-4 w-4 mr-2" />
+                                    İptal
+                                  </Button>
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="flex items-start justify-between gap-4">
+                                <div className="flex-1">
+                                  <div className="flex items-center gap-3 mb-2">
+                                    <h3 className="font-semibold text-lg">{brand.name}</h3>
+                                    <Badge variant="outline">{brand.category}</Badge>
+                                    {!brand.is_active && (
+                                      <Badge variant="secondary">Pasif</Badge>
+                                    )}
+                                  </div>
+                                  {brand.description && (
+                                    <p className="text-sm text-muted-foreground mb-2">{brand.description}</p>
+                                  )}
+                                  <p className="text-sm font-medium text-green-600">{brand.discount_info}</p>
+                                </div>
+                                <div className="flex gap-2">
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => handleToggleBrand(brand.id, !brand.is_active)}
+                                  >
+                                    {brand.is_active ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => setEditingBrand(brand)}
+                                  >
+                                    <Edit2 className="h-4 w-4" />
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="destructive"
+                                    onClick={() => handleDeleteBrand(brand.id)}
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              </div>
+                            )}
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
           </div>
         </main>
       </div>
