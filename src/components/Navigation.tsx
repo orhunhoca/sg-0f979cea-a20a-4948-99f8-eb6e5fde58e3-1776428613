@@ -18,11 +18,20 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+} from "@/components/ui/navigation-menu";
 import { authService } from "@/services/authService";
 import { notificationService } from "@/services/notificationService";
-import { Bell, LogOut, User } from "lucide-react";
+import { Bell, LogOut, User, ChevronDown, Menu, X } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { tr } from "date-fns/locale";
+import { cn } from "@/lib/utils";
 
 export function Navigation() {
   const router = useRouter();
@@ -30,6 +39,7 @@ export function Navigation() {
   const [notifications, setNotifications] = useState<any[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [notifOpen, setNotifOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     loadUser();
@@ -40,7 +50,6 @@ export function Navigation() {
       loadNotifications();
       loadUnreadCount();
       
-      // Subscribe to realtime notifications
       const channel = notificationService.subscribeToNotifications(user.id, (payload) => {
         setNotifications((prev) => [payload.new, ...prev]);
         setUnreadCount((prev) => prev + 1);
@@ -96,67 +105,132 @@ export function Navigation() {
     return null;
   }
 
-  return (
-    <nav className="border-b bg-card">
-      <div className="container flex h-16 items-center justify-between">
-        <div className="flex items-center gap-8">
-          <Link href="/" className="flex items-center">
-            <Image 
-              src="/logo.jpg" 
-              alt="Eyüboğlu Eğitim Kurumları Mezunlar Derneği" 
-              width={180}
-              height={48}
-              className="h-12 w-auto"
-              priority
-            />
-          </Link>
+  const aboutItems = [
+    { href: "/about", label: "Başkanın Mesajı & Yönetim Kurulu" },
+  ];
 
-          <div className="hidden md:flex gap-6">
-            <Link href="/" className="text-sm font-medium hover:text-primary transition-colors">
-              Ana Sayfa
-            </Link>
-            <Link href="/directory" className="text-sm font-medium hover:text-primary transition-colors">
-              Üyeler
-            </Link>
-            <a 
-              href="https://fonzip.com/eymeder/etkinlikler" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="text-sm font-medium hover:text-primary transition-colors"
-            >
-              Etkinlikler
-            </a>
-            <Link href="/jobs" className="text-sm font-medium hover:text-primary transition-colors">
-              İş İlanları
-            </Link>
-            <Link href="/gallery" className="text-sm font-medium hover:text-primary transition-colors">
-              Galeri
-            </Link>
-            <Link href="/news" className="text-sm font-medium hover:text-primary transition-colors">
-              Haberler
-            </Link>
-            <Link href="/testimonials" className="text-sm font-medium hover:text-primary transition-colors">
-              Başarılı Mezunlar
-            </Link>
-            <Link href="/groups" className="text-sm font-medium hover:text-primary transition-colors">
-              Gruplar
-            </Link>
-            <Link href="/mentorship" className="text-sm font-medium hover:text-primary transition-colors">
-              Mentorluk
-            </Link>
-            <Link href="/messages" className="text-sm font-medium hover:text-primary transition-colors">
-              Mesajlar
-            </Link>
-            <Link href="/fonzip-signup" className="text-sm font-medium hover:text-primary transition-colors">
+  const membershipItems = [
+    { href: "http://eymeder.com/neden-uye-olmaliyim", label: "Neden Üye Olmalıyım?", external: true },
+    { href: "https://fonzip.com/eymeder/form/uyelik-basvuru-formu", label: "Üyelik Başvuru", external: true },
+    { href: "https://fonzip.com/eymeder/odeme", label: "Aidat Öde", external: true },
+    { href: "https://fonzip.com/eymeder/bagis-yap", label: "Bağış Yap", external: true },
+  ];
+
+  return (
+    <nav className="border-b bg-card sticky top-0 z-50 shadow-sm">
+      <div className="container flex h-16 items-center justify-between">
+        {/* Logo */}
+        <Link href="/" className="flex items-center">
+          <Image 
+            src="/logo.jpg" 
+            alt="Eyüboğlu Eğitim Kurumları Mezunlar Derneği" 
+            width={180}
+            height={48}
+            className="h-12 w-auto"
+            priority
+          />
+        </Link>
+
+        {/* Desktop Navigation */}
+        <div className="hidden lg:flex items-center gap-6">
+          <Link href="/" className="text-sm font-medium hover:text-primary transition-colors">
+            Ana Sayfa
+          </Link>
+          
+          {/* Hakkımızda Dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger className="flex items-center gap-1 text-sm font-medium hover:text-primary transition-colors outline-none">
+              Hakkımızda
+              <ChevronDown className="h-3 w-3" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start">
+              {aboutItems.map((item) => (
+                <DropdownMenuItem key={item.href} asChild>
+                  <Link href={item.href} className="cursor-pointer">
+                    {item.label}
+                  </Link>
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <Link href="/directory" className="text-sm font-medium hover:text-primary transition-colors">
+            Üyeler
+          </Link>
+          <a 
+            href="https://fonzip.com/eymeder/etkinlikler" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="text-sm font-medium hover:text-primary transition-colors"
+          >
+            Etkinlikler
+          </a>
+          <Link href="/jobs" className="text-sm font-medium hover:text-primary transition-colors">
+            İş İlanları
+          </Link>
+          <Link href="/gallery" className="text-sm font-medium hover:text-primary transition-colors">
+            Galeri
+          </Link>
+          <Link href="/news" className="text-sm font-medium hover:text-primary transition-colors">
+            Haberler
+          </Link>
+          <Link href="/testimonials" className="text-sm font-medium hover:text-primary transition-colors">
+            Başarılı Mezunlar
+          </Link>
+          <Link href="/groups" className="text-sm font-medium hover:text-primary transition-colors">
+            Gruplar
+          </Link>
+          <Link href="/mentorship" className="text-sm font-medium hover:text-primary transition-colors">
+            Mentorluk
+          </Link>
+          <Link href="/messages" className="text-sm font-medium hover:text-primary transition-colors">
+            Mesajlar
+          </Link>
+          
+          {/* Üyelik Dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger className="flex items-center gap-1 text-sm font-medium hover:text-primary transition-colors outline-none">
               Üyelik
-            </Link>
-            <Link href="/admin" className="text-sm font-medium hover:text-primary transition-colors">
-              Admin
-            </Link>
-          </div>
+              <ChevronDown className="h-3 w-3" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-64">
+              {membershipItems.map((item) => (
+                <DropdownMenuItem key={item.href} asChild>
+                  {item.external ? (
+                    <a 
+                      href={item.href} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="cursor-pointer"
+                    >
+                      {item.label}
+                    </a>
+                  ) : (
+                    <Link href={item.href} className="cursor-pointer">
+                      {item.label}
+                    </Link>
+                  )}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <Link href="/admin" className="text-sm font-medium hover:text-primary transition-colors">
+            Admin
+          </Link>
         </div>
 
         <div className="flex items-center gap-4">
+          {/* Mobile Menu Button */}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="lg:hidden"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          >
+            {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </Button>
+
           {/* Notifications Bell */}
           <Popover open={notifOpen} onOpenChange={setNotifOpen}>
             <PopoverTrigger asChild>
@@ -245,6 +319,136 @@ export function Navigation() {
           </DropdownMenu>
         </div>
       </div>
+
+      {/* Mobile Menu */}
+      {mobileMenuOpen && (
+        <div className="lg:hidden border-t bg-card">
+          <div className="container py-4 space-y-3">
+            <Link 
+              href="/" 
+              className="block px-4 py-2 text-sm font-medium hover:bg-muted rounded-md transition-colors"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Ana Sayfa
+            </Link>
+            
+            <div className="space-y-1">
+              <div className="px-4 py-2 text-sm font-semibold text-muted-foreground">Hakkımızda</div>
+              {aboutItems.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="block pl-8 pr-4 py-2 text-sm hover:bg-muted rounded-md transition-colors"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </div>
+
+            <Link 
+              href="/directory" 
+              className="block px-4 py-2 text-sm font-medium hover:bg-muted rounded-md transition-colors"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Üyeler
+            </Link>
+            <a 
+              href="https://fonzip.com/eymeder/etkinlikler" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="block px-4 py-2 text-sm font-medium hover:bg-muted rounded-md transition-colors"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Etkinlikler
+            </a>
+            <Link 
+              href="/jobs" 
+              className="block px-4 py-2 text-sm font-medium hover:bg-muted rounded-md transition-colors"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              İş İlanları
+            </Link>
+            <Link 
+              href="/gallery" 
+              className="block px-4 py-2 text-sm font-medium hover:bg-muted rounded-md transition-colors"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Galeri
+            </Link>
+            <Link 
+              href="/news" 
+              className="block px-4 py-2 text-sm font-medium hover:bg-muted rounded-md transition-colors"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Haberler
+            </Link>
+            <Link 
+              href="/testimonials" 
+              className="block px-4 py-2 text-sm font-medium hover:bg-muted rounded-md transition-colors"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Başarılı Mezunlar
+            </Link>
+            <Link 
+              href="/groups" 
+              className="block px-4 py-2 text-sm font-medium hover:bg-muted rounded-md transition-colors"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Gruplar
+            </Link>
+            <Link 
+              href="/mentorship" 
+              className="block px-4 py-2 text-sm font-medium hover:bg-muted rounded-md transition-colors"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Mentorluk
+            </Link>
+            <Link 
+              href="/messages" 
+              className="block px-4 py-2 text-sm font-medium hover:bg-muted rounded-md transition-colors"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Mesajlar
+            </Link>
+
+            <div className="space-y-1">
+              <div className="px-4 py-2 text-sm font-semibold text-muted-foreground">Üyelik</div>
+              {membershipItems.map((item) => (
+                item.external ? (
+                  <a
+                    key={item.href}
+                    href={item.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block pl-8 pr-4 py-2 text-sm hover:bg-muted rounded-md transition-colors"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    {item.label}
+                  </a>
+                ) : (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className="block pl-8 pr-4 py-2 text-sm hover:bg-muted rounded-md transition-colors"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    {item.label}
+                  </Link>
+                )
+              ))}
+            </div>
+
+            <Link 
+              href="/admin" 
+              className="block px-4 py-2 text-sm font-medium hover:bg-muted rounded-md transition-colors"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Admin
+            </Link>
+          </div>
+        </div>
+      )}
     </nav>
   );
 }

@@ -1114,7 +1114,8 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      decrement_media_likes: { Args: { media_id: string }; Returns: undefined }
+      increment_media_likes: { Args: { media_id: string }; Returns: undefined }
     }
     Enums: {
       [_ in never]: never
