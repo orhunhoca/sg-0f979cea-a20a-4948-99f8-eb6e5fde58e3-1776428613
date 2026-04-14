@@ -462,7 +462,7 @@ export function Navigation() {
 
             <Link 
               href="/admin" 
-              className="block px-4 py-2 text-sm font-medium hover:bg-muted rounded-md transition-colors"
+              className="block px-4 py-2 hover:bg-muted rounded-md transition-colors"
               onClick={() => setMobileMenuOpen(false)}
             >
               Admin
