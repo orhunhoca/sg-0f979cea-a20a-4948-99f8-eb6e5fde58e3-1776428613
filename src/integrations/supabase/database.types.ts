@@ -814,12 +814,16 @@ export type Database = {
           bio: string | null
           city: string | null
           company: string | null
+          country: string | null
           created_at: string | null
           department: string | null
           email: string | null
+          facebook_url: string | null
           full_name: string | null
           graduation_year: number | null
+          high_school_graduation_year: number | null
           id: string
+          instagram_url: string | null
           is_mentor: boolean | null
           linkedin_url: string | null
           membership_number: string | null
@@ -827,6 +831,10 @@ export type Database = {
           mentorship_areas: string[] | null
           phone: string | null
           profession: string | null
+          twitter_url: string | null
+          university: string | null
+          university_graduation_year: number | null
+          university_status: string | null
           updated_at: string | null
         }
         Insert: {
@@ -834,12 +842,16 @@ export type Database = {
           bio?: string | null
           city?: string | null
           company?: string | null
+          country?: string | null
           created_at?: string | null
           department?: string | null
           email?: string | null
+          facebook_url?: string | null
           full_name?: string | null
           graduation_year?: number | null
+          high_school_graduation_year?: number | null
           id: string
+          instagram_url?: string | null
           is_mentor?: boolean | null
           linkedin_url?: string | null
           membership_number?: string | null
@@ -847,6 +859,10 @@ export type Database = {
           mentorship_areas?: string[] | null
           phone?: string | null
           profession?: string | null
+          twitter_url?: string | null
+          university?: string | null
+          university_graduation_year?: number | null
+          university_status?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -854,12 +870,16 @@ export type Database = {
           bio?: string | null
           city?: string | null
           company?: string | null
+          country?: string | null
           created_at?: string | null
           department?: string | null
           email?: string | null
+          facebook_url?: string | null
           full_name?: string | null
           graduation_year?: number | null
+          high_school_graduation_year?: number | null
           id?: string
+          instagram_url?: string | null
           is_mentor?: boolean | null
           linkedin_url?: string | null
           membership_number?: string | null
@@ -867,6 +887,10 @@ export type Database = {
           mentorship_areas?: string[] | null
           phone?: string | null
           profession?: string | null
+          twitter_url?: string | null
+          university?: string | null
+          university_graduation_year?: number | null
+          university_status?: string | null
           updated_at?: string | null
         }
         Relationships: [
