@@ -78,7 +78,7 @@ export default function AdminPage() {
   }, [router]);
 
   const checkAdminAccess = async () => {
-    const { data: { session } } = await authService.getSession();
+    const { data: session } = await authService.getCurrentSession();
     if (!session?.user) {
       router.push("/auth/login");
       return;
