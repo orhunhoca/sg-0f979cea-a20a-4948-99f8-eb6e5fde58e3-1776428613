@@ -120,14 +120,11 @@ export function Navigation() {
     <nav className="border-b bg-card sticky top-0 z-50 shadow-sm">
       <div className="container flex h-16 items-center justify-between">
         {/* Logo */}
-        <Link href="/" className="flex items-center">
-          <Image 
+        <Link href="/" className="flex items-center gap-2">
+          <img 
             src="/logo.jpg" 
-            alt="Eyüboğlu Eğitim Kurumları Mezunlar Derneği" 
-            width={180}
-            height={48}
-            className="h-12 w-auto"
-            priority
+            alt="Eyüboğlu Logo" 
+            className="h-10 w-auto object-contain"
           />
         </Link>
 
