@@ -85,12 +85,12 @@ export default function SignupPage() {
       }
 
       // Step 2: Create auth account
-      const { data: authData, error: authError } = await authService.signUp(
+      const { user, error: authError } = await authService.signUp(
         email,
         password
       );
 
-      if (authError || !authData.user) {
+      if (authError || !user) {
         toast({
           title: "Kayıt Hatası",
           description: authError?.message || "Kayıt oluşturulamadı",
@@ -104,11 +104,11 @@ export default function SignupPage() {
       const { error: profileError } = await supabase
         .from("profiles")
         .update({
-          full_name: validationData.fullName || email.split("@")[0],
+          full_name: validationData?.fullName || email.split("@")[0],
           email,
           membership_number: membershipNumber,
         })
-        .eq("id", authData.user.id);
+        .eq("id", user.id);
 
       if (profileError) {
         console.error("Profile update error:", profileError);
@@ -119,7 +119,7 @@ export default function SignupPage() {
         .from("membership_numbers")
         .update({ 
           is_used: true,
-          used_by: authData.user.id 
+          used_by: user.id 
         })
         .eq("membership_number", membershipNumber);
 
@@ -128,7 +128,7 @@ export default function SignupPage() {
       const { error: qrError } = await supabase
         .from("user_qr_codes")
         .insert({
-          user_id: authData.user.id,
+          user_id: user.id,
           qr_code: qrCode,
         });
 
@@ -138,7 +138,7 @@ export default function SignupPage() {
 
       toast({
         title: "Kayıt Başarılı! 🎉",
-        description: "Hesabınız oluşturuldu. QR kodunuz profil sayfanızda görüntülenebilir.",
+        description: "Hesabınız oluşturuldu. QR kodunuz otomatik olarak tanımlandı.",
       });
 
       setTimeout(() => {
