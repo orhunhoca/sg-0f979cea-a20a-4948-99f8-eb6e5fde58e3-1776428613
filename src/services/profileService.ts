@@ -104,29 +104,32 @@ export const profileService = {
 
   // Update current user's profile
   async updateMyProfile(updates: ProfileUpdate): Promise<{ data: Profile | null; error: any }> {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) {
-        return { data: null, error: new Error("Kullanıcı oturumu bulunamadı") };
-      }
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) return { data: null, error: { message: "Not authenticated" } };
 
-      const { data, error } = await supabase
-        .from("profiles")
-        .update({
-          ...updates,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", user.id)
-        .select()
-        .single();
+    const { data, error } = await supabase
+      .from("profiles")
+      .update({ ...updates, updated_at: new Date().toISOString() })
+      .eq("id", user.id)
+      .select()
+      .single();
 
-      console.log("Update profile:", { data, error });
-      return { data, error };
-    } catch (error: any) {
-      console.error("Update profile error:", error);
-      return { data: null, error };
-    }
+    console.log("updateMyProfile:", { data, error });
+    return { data, error };
+  },
+
+  // Update any profile (Admin only)
+  async updateProfileById(userId: string, updates: ProfileUpdate): Promise<{ data: Profile | null; error: any }> {
+    const { data, error } = await supabase
+      .from("profiles")
+      .update({ ...updates, updated_at: new Date().toISOString() })
+      .eq("id", userId)
+      .select()
+      .single();
+
+    console.log("updateProfileById:", { data, error });
+    return { data, error };
   },
 
   // Search and filter alumni directory

@@ -78,13 +78,13 @@ export default function AdminPage() {
   }, [router]);
 
   const checkAdminAccess = async () => {
-    const { data: { user } } = await authService.getSession();
-    if (!user) {
+    const { data: session } = await authService.getCurrentSession();
+    if (!session?.user) {
       router.push("/auth/login");
       return;
     }
 
-    const { data: profile } = await profileService.getProfile(user.id);
+    const { data: profile } = await profileService.getProfileById(session.user.id);
     if (!profile?.is_admin) {
       router.push("/");
       return;
@@ -256,7 +256,7 @@ export default function AdminPage() {
       updates.is_moderator = false;
     }
 
-    const { error } = await profileService.updateProfile(userId, updates);
+    const { error } = await profileService.updateProfileById(userId, updates);
     if (!error) {
       toast({ title: "Rol güncellendi" });
       loadUsers();
