@@ -78,7 +78,7 @@ export default function AdminPage() {
   }, [router]);
 
   const checkAdminAccess = async () => {
-    const { data: session } = await authService.getCurrentSession();
+    const { data: { session } } = await supabase.auth.getSession();
     if (!session?.user) {
       router.push("/auth/login");
       return;
