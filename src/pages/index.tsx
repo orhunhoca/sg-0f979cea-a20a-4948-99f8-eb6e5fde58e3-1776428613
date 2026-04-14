@@ -6,7 +6,7 @@ import { SEO } from "@/components/SEO";
 import { Navigation } from "@/components/Navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/hooks/useAuth";
+import { authService } from "@/services/authService";
 import { 
   Users, 
   Calendar, 
@@ -24,12 +24,18 @@ import {
 
 export default function Home() {
   const router = useRouter();
-  const { user, profile, loading } = useAuth();
+  const [user, setUser] = useState<any>(null);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
+    checkUser();
   }, []);
+
+  const checkUser = async () => {
+    const { data } = await authService.getCurrentSession();
+    setUser(data?.session?.user || null);
+  };
 
   const menuItems = [
     {
