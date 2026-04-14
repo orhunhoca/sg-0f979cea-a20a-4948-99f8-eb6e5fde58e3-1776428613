@@ -11,7 +11,7 @@ import { signupWithMembershipNumber } from "@/services/authService";
 import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { authService } from "@/lib/authService";
+import { authService } from "@/services/authService";
 
 export default function SignupPage() {
   const router = useRouter();
