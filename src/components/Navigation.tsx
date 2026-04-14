@@ -229,11 +229,10 @@ export function Navigation() {
               <Link href="/admin" className="text-sm font-medium hover:text-primary transition-colors hidden lg:block">
                 Admin
               </Link>
-              <Link href="/admin/upload-members" className="text-sm font-medium hover:text-primary transition-colors hidden lg:block">
-                Mezun Yükle
-              </Link>
             </>
           )}
+
+          {/* Language Selector */}
         </div>
 
         <div className="flex items-center gap-4">
@@ -474,13 +473,6 @@ export function Navigation() {
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Admin
-              </Link>
-              <Link 
-                href="/admin/upload-members" 
-                className="block px-4 py-2 hover:bg-muted rounded-md transition-colors"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Mezun Yükle
               </Link>
             </div>
 
