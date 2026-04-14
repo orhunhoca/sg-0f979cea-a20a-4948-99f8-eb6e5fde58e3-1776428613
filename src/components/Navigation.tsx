@@ -225,9 +225,14 @@ export function Navigation() {
           </DropdownMenu>
 
           {user && (
-            <Link href="/admin" className="text-sm font-medium hover:text-primary transition-colors hidden lg:block">
-              Admin
-            </Link>
+            <>
+              <Link href="/admin" className="text-sm font-medium hover:text-primary transition-colors hidden lg:block">
+                Admin
+              </Link>
+              <Link href="/admin/upload-members" className="text-sm font-medium hover:text-primary transition-colors hidden lg:block">
+                Mezun Yükle
+              </Link>
+            </>
           )}
         </div>
 
@@ -462,13 +467,24 @@ export function Navigation() {
               ))}
             </div>
 
-            <Link 
-              href="/admin" 
-              className="block px-4 py-2 hover:bg-muted rounded-md transition-colors"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Admin
-            </Link>
+            <div className="space-y-1">
+              <Link 
+                href="/admin" 
+                className="block px-4 py-2 hover:bg-muted rounded-md transition-colors"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Admin
+              </Link>
+              <Link 
+                href="/admin/upload-members" 
+                className="block px-4 py-2 hover:bg-muted rounded-md transition-colors"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Mezun Yükle
+              </Link>
+            </div>
+
+            {/* Mobile Auth Section */}
           </div>
         </div>
       )}
