@@ -163,6 +163,9 @@ export function Navigation() {
           <Link href="/directory" className="text-sm font-medium hover:text-primary transition-colors">
             Üyeler
           </Link>
+          <Link href="/brands" className="text-sm font-medium hover:text-primary transition-colors">
+            İndirimli Markalar
+          </Link>
           <a 
             href="https://fonzip.com/eymeder/etkinlikler" 
             target="_blank" 
@@ -363,6 +366,13 @@ export function Navigation() {
               onClick={() => setMobileMenuOpen(false)}
             >
               Üyeler
+            </Link>
+            <Link 
+              href="/brands" 
+              className="block px-4 py-2 text-sm font-medium hover:bg-muted rounded-md transition-colors"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              İndirimli Markalar
             </Link>
             <a 
               href="https://fonzip.com/eymeder/etkinlikler" 
