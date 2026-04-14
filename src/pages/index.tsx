@@ -1,380 +1,228 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
-import Link from "next/link";
+import Head from "next/head";
 import { SEO } from "@/components/SEO";
 import { Navigation } from "@/components/Navigation";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Textarea } from "@/components/ui/textarea";
 import { authService } from "@/services/authService";
-import { gamificationService } from "@/services/gamificationService";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { Card, CardContent } from "@/components/ui/card";
 import { 
-  Loader2, 
   Users, 
   Calendar, 
   Briefcase, 
-  Trophy, 
-  TrendingUp,
-  Heart,
-  MessageCircle,
-  Send,
-  PlusCircle
+  Image as ImageIcon, 
+  Newspaper, 
+  Star, 
+  UserPlus, 
+  MessageSquare,
+  UsersRound,
+  Award
 } from "lucide-react";
+import Link from "next/link";
 
 export default function HomePage() {
   const router = useRouter();
-  const { toast } = useToast();
-  const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState<any>(null);
-  const [posts, setPosts] = useState<any[]>([]);
-  const [newPost, setNewPost] = useState("");
-  const [posting, setPosting] = useState(false);
 
   useEffect(() => {
     checkAuth();
   }, []);
 
   const checkAuth = async () => {
-    const currentUser = await authService.getCurrentUser();
-    if (!currentUser) {
+    const user = await authService.getCurrentUser();
+    if (!user) {
       router.push("/auth/login");
     } else {
-      setUser(currentUser);
-      await Promise.all([
-        loadStats(currentUser.id),
-        loadPosts(),
-      ]);
       setLoading(false);
     }
-  };
-
-  const loadStats = async (userId: string) => {
-    const data = await gamificationService.getUserStats(userId);
-    setStats(data);
-  };
-
-  const loadPosts = async () => {
-    const { data, error } = await supabase
-      .from("posts")
-      .select(`
-        *,
-        author:profiles!posts_user_id_fkey(id, full_name, avatar_url, profession),
-        post_likes(id, user_id),
-        post_comments(id, content, user_id, created_at, author:profiles!post_comments_user_id_fkey(full_name))
-      `)
-      .order("created_at", { ascending: false })
-      .limit(20);
-
-    if (!error && data) {
-      setPosts(data);
-    }
-  };
-
-  const handleCreatePost = async () => {
-    if (!newPost.trim()) return;
-
-    setPosting(true);
-
-    const { error } = await supabase
-      .from("posts")
-      .insert({
-        user_id: user.id,
-        content: newPost,
-        post_type: "update",
-      });
-
-    if (error) {
-      toast({
-        title: "Hata",
-        description: "Gönderi oluşturulamadı",
-        variant: "destructive",
-      });
-    } else {
-      toast({
-        title: "Başarılı",
-        description: "Gönderi paylaşıldı",
-      });
-      setNewPost("");
-      await loadPosts();
-    }
-
-    setPosting(false);
-  };
-
-  const handleLike = async (postId: string) => {
-    const post = posts.find(p => p.id === postId);
-    const hasLiked = post?.post_likes?.some((like: any) => like.user_id === user.id);
-
-    if (hasLiked) {
-      const likeToDelete = post.post_likes.find((like: any) => like.user_id === user.id);
-      await supabase
-        .from("post_likes")
-        .delete()
-        .eq("id", likeToDelete.id);
-    } else {
-      await supabase
-        .from("post_likes")
-        .insert({
-          post_id: postId,
-          user_id: user.id,
-        });
-    }
-
-    await loadPosts();
   };
 
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
       </div>
     );
   }
 
+  const menuItems = [
+    {
+      title: "Üyeler",
+      description: "Mezun arkadaşlarınızı bulun",
+      icon: Users,
+      href: "/directory",
+      color: "from-blue-500 to-blue-600",
+      iconColor: "text-blue-600",
+    },
+    {
+      title: "Etkinlikler",
+      description: "Yaklaşan etkinlikler",
+      icon: Calendar,
+      href: "https://fonzip.com/eymeder/etkinlikler",
+      external: true,
+      color: "from-purple-500 to-purple-600",
+      iconColor: "text-purple-600",
+    },
+    {
+      title: "İş İlanları",
+      description: "Kariyer fırsatları",
+      icon: Briefcase,
+      href: "/jobs",
+      color: "from-green-500 to-green-600",
+      iconColor: "text-green-600",
+    },
+    {
+      title: "Galeri",
+      description: "Fotoğraf ve videolar",
+      icon: ImageIcon,
+      href: "/gallery",
+      color: "from-pink-500 to-pink-600",
+      iconColor: "text-pink-600",
+    },
+    {
+      title: "Haberler",
+      description: "Güncel haberler",
+      icon: Newspaper,
+      href: "/news",
+      color: "from-orange-500 to-orange-600",
+      iconColor: "text-orange-600",
+    },
+    {
+      title: "Başarılı Mezunlar",
+      description: "İlham verici hikayeler",
+      icon: Star,
+      href: "/testimonials",
+      color: "from-yellow-500 to-yellow-600",
+      iconColor: "text-yellow-600",
+    },
+    {
+      title: "Gruplar",
+      description: "İlgi alanı grupları",
+      icon: UsersRound,
+      href: "/groups",
+      color: "from-indigo-500 to-indigo-600",
+      iconColor: "text-indigo-600",
+    },
+    {
+      title: "Mentorluk",
+      description: "Mentor bulun",
+      icon: Award,
+      href: "/mentorship",
+      color: "from-teal-500 to-teal-600",
+      iconColor: "text-teal-600",
+    },
+    {
+      title: "Mesajlar",
+      description: "Sohbet edin",
+      icon: MessageSquare,
+      href: "/messages",
+      color: "from-red-500 to-red-600",
+      iconColor: "text-red-600",
+    },
+    {
+      title: "Üyelik",
+      description: "Üye olun veya aidat ödeyin",
+      icon: UserPlus,
+      href: "/fonzip-signup",
+      color: "from-cyan-500 to-cyan-600",
+      iconColor: "text-cyan-600",
+    },
+  ];
+
   return (
     <>
-      <SEO 
-        title="Ana Sayfa - Mezunlar Derneği"
-        description="Mezunlar ağınıza hoş geldiniz"
-      />
-      
-      <div className="min-h-screen bg-background">
+      <Head>
+        <SEO 
+          title="Ana Sayfa - Eyüboğlu Mezunlar Derneği"
+          description="Eyüboğlu Eğitim Kurumları Mezunlar Derneği - Mezunlar arasında güçlü bir profesyonel ve sosyal bağlantı ağı"
+        />
+      </Head>
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
         <Navigation />
-
         <main className="container py-8">
-          <div className="max-w-6xl mx-auto space-y-6">
-            {/* Welcome Section */}
-            <div className="space-y-2">
-              <h1 className="text-4xl font-heading font-bold">
-                Hoş Geldiniz, {user?.email?.split("@")[0]}!
-              </h1>
-              <p className="text-muted-foreground">
-                Mezunlar ağınızda neler oluyor?
-              </p>
-            </div>
+          {/* Hero Section */}
+          <div className="text-center mb-12 space-y-4">
+            <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+              Hoş Geldiniz
+            </h1>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              Eyüboğlu Eğitim Kurumları Mezunlar Derneği
+            </p>
+            <div className="h-1 w-24 bg-gradient-to-r from-primary to-accent mx-auto rounded-full"></div>
+          </div>
 
-            {/* Stats Cards */}
-            <div className="grid gap-4 md:grid-cols-4">
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium flex items-center gap-2">
-                    <Users className="h-4 w-4 text-primary" />
-                    Toplam Üye
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">1,247</div>
-                  <p className="text-xs text-muted-foreground">+12 bu ay</p>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-accent" />
-                    Yaklaşan Etkinlik
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">8</div>
-                  <p className="text-xs text-muted-foreground">30 gün içinde</p>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium flex items-center gap-2">
-                    <Briefcase className="h-4 w-4 text-green-500" />
-                    Aktif İş İlanı
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">24</div>
-                  <p className="text-xs text-muted-foreground">Bu hafta 5 yeni</p>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium flex items-center gap-2">
-                    <Trophy className="h-4 w-4 text-yellow-500" />
-                    Toplam Puanınız
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{stats?.total_points || 0}</div>
-                  <p className="text-xs text-muted-foreground">
-                    Seviye {stats?.level || 1}
-                  </p>
-                </CardContent>
-              </Card>
-            </div>
-
-            <div className="grid gap-6 lg:grid-cols-3">
-              {/* News Feed */}
-              <div className="lg:col-span-2 space-y-4">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <TrendingUp className="h-5 w-5" />
-                      Haber Akışı
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    {/* Create Post */}
-                    <div className="flex gap-3">
-                      <Avatar className="h-10 w-10">
-                        <AvatarImage src={user?.user_metadata?.avatar_url} />
-                        <AvatarFallback className="bg-primary text-primary-foreground">
-                          {user?.email?.charAt(0).toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1 space-y-2">
-                        <Textarea
-                          placeholder="Ne düşünüyorsunuz?"
-                          value={newPost}
-                          onChange={(e) => setNewPost(e.target.value)}
-                          rows={3}
-                        />
-                        <Button
-                          onClick={handleCreatePost}
-                          disabled={!newPost.trim() || posting}
-                          size="sm"
-                          className="gap-2"
-                        >
-                          {posting ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                          ) : (
-                            <Send className="h-4 w-4" />
-                          )}
-                          Paylaş
-                        </Button>
+          {/* Modern Grid Menu */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 max-w-7xl mx-auto">
+            {menuItems.map((item) => {
+              const Icon = item.icon;
+              const CardComponent = (
+                <Card className="group cursor-pointer overflow-hidden hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 border-0">
+                  <CardContent className="p-0">
+                    <div className={`h-2 bg-gradient-to-r ${item.color}`}></div>
+                    <div className="p-6 space-y-4">
+                      <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${item.color} flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-lg`}>
+                        <Icon className="h-7 w-7 text-white" />
                       </div>
-                    </div>
-
-                    <div className="border-t" />
-
-                    {/* Posts List */}
-                    <div className="space-y-4">
-                      {posts.length === 0 ? (
-                        <p className="text-center text-muted-foreground py-8">
-                          Henüz gönderi yok. İlk gönderiyi siz paylaşın!
+                      <div className="space-y-2">
+                        <h3 className="text-xl font-bold text-foreground group-hover:text-primary transition-colors">
+                          {item.title}
+                        </h3>
+                        <p className="text-sm text-muted-foreground">
+                          {item.description}
                         </p>
-                      ) : (
-                        posts.map((post) => (
-                          <div key={post.id} className="space-y-3 pb-4 border-b last:border-0">
-                            <div className="flex gap-3">
-                              <Avatar className="h-10 w-10">
-                                <AvatarImage src={post.author?.avatar_url} />
-                                <AvatarFallback className="bg-primary text-primary-foreground">
-                                  {post.author?.full_name?.charAt(0).toUpperCase()}
-                                </AvatarFallback>
-                              </Avatar>
-                              <div className="flex-1">
-                                <div className="flex items-center gap-2">
-                                  <span className="font-medium">
-                                    {post.author?.full_name || "Anonim"}
-                                  </span>
-                                  {post.author?.profession && (
-                                    <span className="text-sm text-muted-foreground">
-                                      · {post.author.profession}
-                                    </span>
-                                  )}
-                                </div>
-                                <p className="text-sm text-muted-foreground">
-                                  {new Date(post.created_at).toLocaleString("tr-TR", {
-                                    day: "numeric",
-                                    month: "long",
-                                    hour: "2-digit",
-                                    minute: "2-digit",
-                                  })}
-                                </p>
-                              </div>
-                            </div>
-
-                            <p className="text-sm whitespace-pre-wrap">{post.content}</p>
-
-                            <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className={`gap-2 ${
-                                  post.post_likes?.some((like: any) => like.user_id === user.id)
-                                    ? "text-red-500"
-                                    : ""
-                                }`}
-                                onClick={() => handleLike(post.id)}
-                              >
-                                <Heart className="h-4 w-4" />
-                                {post.post_likes?.length || 0}
-                              </Button>
-                              <Button variant="ghost" size="sm" className="gap-2">
-                                <MessageCircle className="h-4 w-4" />
-                                {post.post_comments?.length || 0}
-                              </Button>
-                            </div>
-                          </div>
-                        ))
-                      )}
+                      </div>
+                      <div className={`h-0.5 bg-gradient-to-r ${item.color} transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300`}></div>
                     </div>
                   </CardContent>
                 </Card>
-              </div>
+              );
 
-              {/* Sidebar */}
-              <div className="space-y-4">
-                {/* Quick Actions */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-sm font-medium">Hızlı Erişim</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-2">
-                    <Button asChild variant="outline" className="w-full justify-start gap-2">
-                      <Link href="/events/create">
-                        <PlusCircle className="h-4 w-4" />
-                        Etkinlik Oluştur
-                      </Link>
-                    </Button>
-                    <Button asChild variant="outline" className="w-full justify-start gap-2">
-                      <Link href="/jobs/create">
-                        <PlusCircle className="h-4 w-4" />
-                        İş İlanı Ver
-                      </Link>
-                    </Button>
-                    <Button asChild variant="outline" className="w-full justify-start gap-2">
-                      <Link href="/directory">
-                        <Users className="h-4 w-4" />
-                        Üye Ara
-                      </Link>
-                    </Button>
-                  </CardContent>
-                </Card>
+              if (item.external) {
+                return (
+                  <a
+                    key={item.title}
+                    href={item.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {CardComponent}
+                  </a>
+                );
+              }
 
-                {/* Badges */}
-                {stats?.badges && stats.badges.length > 0 && (
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-sm font-medium">Rozetleriniz</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="flex flex-wrap gap-2">
-                        {stats.badges.map((badge: any) => (
-                          <Badge key={badge.id} variant="secondary" className="gap-1">
-                            <Trophy className="h-3 w-3" />
-                            {badge.title}
-                          </Badge>
-                        ))}
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
-              </div>
-            </div>
+              return (
+                <Link key={item.title} href={item.href}>
+                  {CardComponent}
+                </Link>
+              );
+            })}
+          </div>
+
+          {/* Call to Action */}
+          <div className="mt-16 text-center">
+            <Card className="max-w-2xl mx-auto bg-gradient-to-br from-primary/10 via-accent/10 to-primary/10 border-primary/20">
+              <CardContent className="p-8 space-y-4">
+                <h2 className="text-2xl font-bold">Büyük Eyüboğlu Ailesine Hoş Geldiniz!</h2>
+                <p className="text-muted-foreground">
+                  Mezun arkadaşlarınızla bağlantıda kalın, etkinliklere katılın ve kariyer fırsatları keşfedin.
+                </p>
+                <div className="flex flex-wrap gap-4 justify-center pt-4">
+                  <Link 
+                    href="/directory"
+                    className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-primary to-primary/80 text-primary-foreground font-medium hover:shadow-lg transition-all hover:scale-105"
+                  >
+                    <Users className="h-5 w-5" />
+                    Mezunları Keşfet
+                  </Link>
+                  <Link 
+                    href="/profile"
+                    className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-accent to-accent/80 text-white font-medium hover:shadow-lg transition-all hover:scale-105"
+                  >
+                    <UserPlus className="h-5 w-5" />
+                    Profilini Tamamla
+                  </Link>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </main>
       </div>
