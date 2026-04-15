@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { authService } from "@/services/authService";
 import { eventService } from "@/services/eventService";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Calendar, MapPin, Users, Plus } from "lucide-react";
+import { Loader2, Calendar, MapPin, Users, Plus, ExternalLink } from "lucide-react";
 
 export default function EventsPage() {
   const router = useRouter();
@@ -59,7 +59,46 @@ export default function EventsPage() {
         <Navigation />
 
         <main className="container py-8">
-          <div className="max-w-6xl mx-auto space-y-6">
+          <div className="max-w-7xl mx-auto">
+            {/* Header */}
+            <div className="mb-8">
+              <h1 className="text-4xl font-bold mb-2">{t.events}</h1>
+              <p className="text-muted-foreground">
+                Mezunlar için düzenlenen etkinliklere göz atın
+              </p>
+            </div>
+
+            {/* Fonzip Events Link */}
+            <Card className="mb-8 bg-gradient-to-r from-purple-500/10 via-purple-400/10 to-purple-500/10 border-purple-500/20">
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between gap-4 flex-wrap">
+                  <div className="flex items-start gap-4">
+                    <div className="bg-purple-500/10 p-3 rounded-full">
+                      <Calendar className="h-6 w-6 text-purple-600" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold mb-2 text-purple-900">Tüm Etkinlikler</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Fonzip üzerinden düzenlenen tüm etkinlikleri görüntüleyin ve katılın
+                      </p>
+                    </div>
+                  </div>
+                  <Button asChild size="lg" className="bg-purple-600 hover:bg-purple-700">
+                    <a 
+                      href="https://fonzip.com/eymeder/etkinlikler" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="gap-2"
+                    >
+                      Fonzip Etkinlikleri
+                      <ExternalLink className="h-4 w-4" />
+                    </a>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Create Event Button */}
             <div className="flex items-center justify-between">
               <div>
                 <h1 className="text-3xl font-heading font-bold">Etkinlikler</h1>

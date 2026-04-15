@@ -1,15 +1,17 @@
 import { useState } from "react";
 import { useRouter } from "next/router";
+import Head from "next/head";
 import { SEO } from "@/components/SEO";
 import { Navigation } from "@/components/Navigation";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { eventService } from "@/services/eventService";
+import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Calendar, MapPin, Users } from "lucide-react";
+import { eventService } from "@/services/eventService";
+import { supabase } from "@/integrations/supabase/client";
+import { Calendar, MapPin, Users, Loader2 } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export default function CreateEventPage() {
@@ -27,6 +29,18 @@ export default function CreateEventPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (creating) return;
+
+    // Validation
+    if (!title || !eventDate || !location) {
+      toast({
+        title: "Hata",
+        description: "Lütfen tüm zorunlu alanları doldurun",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setCreating(true);
 
     const dateTime = `${eventDate}T${eventTime}:00`;
