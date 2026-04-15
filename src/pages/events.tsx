@@ -62,7 +62,7 @@ export default function EventsPage() {
           <div className="max-w-7xl mx-auto">
             {/* Header */}
             <div className="mb-8">
-              <h1 className="text-4xl font-bold mb-2">{t.events}</h1>
+              <h1 className="text-4xl font-bold mb-2">Etkinlikler</h1>
               <p className="text-muted-foreground">
                 Mezunlar için düzenlenen etkinliklere göz atın
               </p>
