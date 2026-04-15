@@ -9,7 +9,14 @@ import { Badge } from "@/components/ui/badge";
 import { authService } from "@/services/authService";
 import { eventService } from "@/services/eventService";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Calendar, MapPin, Users, Plus, ExternalLink } from "lucide-react";
+import { Loader2, Calendar, MapPin, Users, Plus, ExternalLink, CalendarPlus, Download, LayoutGrid, CalendarRange } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { generateICSFile, downloadICS, getGoogleCalendarUrl, getOutlookUrl } from "@/lib/calendarUtils";
 
 export default function EventsPage() {
   const router = useRouter();
@@ -17,6 +24,7 @@ export default function EventsPage() {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [events, setEvents] = useState<any[]>([]);
+  const [viewMode, setViewMode] = useState<"list" | "calendar">("list");
 
   useEffect(() => {
     checkAuth();
@@ -99,17 +107,41 @@ export default function EventsPage() {
             </Card>
 
             {/* Create Event Button */}
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between mb-8">
               <div>
                 <h1 className="text-3xl font-heading font-bold">Etkinlikler</h1>
                 <p className="text-muted-foreground mt-1">Yaklaşan mezun buluşmaları ve etkinlikler</p>
               </div>
-              <Button asChild>
-                <Link href="/events/create">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Etkinlik Oluştur
-                </Link>
-              </Button>
+              <div className="flex items-center gap-3">
+                {/* View Toggle */}
+                <div className="flex items-center border rounded-lg p-1">
+                  <Button
+                    variant={viewMode === "list" ? "default" : "ghost"}
+                    size="sm"
+                    onClick={() => setViewMode("list")}
+                    className="gap-2"
+                  >
+                    <LayoutGrid className="h-4 w-4" />
+                    Liste
+                  </Button>
+                  <Button
+                    variant={viewMode === "calendar" ? "default" : "ghost"}
+                    size="sm"
+                    onClick={() => setViewMode("calendar")}
+                    className="gap-2"
+                  >
+                    <CalendarRange className="h-4 w-4" />
+                    Takvim
+                  </Button>
+                </div>
+
+                <Button asChild>
+                  <Link href="/events/create">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Etkinlik Oluştur
+                  </Link>
+                </Button>
+              </div>
             </div>
 
             {events.length === 0 ? (
@@ -122,7 +154,156 @@ export default function EventsPage() {
                   </Button>
                 </CardContent>
               </Card>
+            ) : viewMode === "calendar" ? (
+              // Calendar View
+              <div className="space-y-4">
+                {Object.entries(
+                  events.reduce((acc: any, event) => {
+                    const month = new Date(event.event_date).toLocaleDateString("tr-TR", {
+                      year: "numeric",
+                      month: "long",
+                    });
+                    if (!acc[month]) acc[month] = [];
+                    acc[month].push(event);
+                    return acc;
+                  }, {})
+                ).map(([month, monthEvents]: [string, any]) => (
+                  <Card key={month}>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <CalendarRange className="h-5 w-5" />
+                        {month}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      {monthEvents.map((event: any) => (
+                        <div
+                          key={event.id}
+                          className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                        >
+                          <div className="flex items-start gap-4 flex-1">
+                            <div className="flex flex-col items-center justify-center bg-primary/10 rounded-lg p-3 min-w-[60px]">
+                              <div className="text-2xl font-bold text-primary">
+                                {new Date(event.event_date).getDate()}
+                              </div>
+                              <div className="text-xs text-muted-foreground uppercase">
+                                {new Date(event.event_date).toLocaleDateString("tr-TR", {
+                                  month: "short",
+                                })}
+                              </div>
+                            </div>
+                            <div className="flex-1">
+                              <h4 className="font-semibold mb-1">{event.title}</h4>
+                              <div className="flex flex-wrap gap-3 text-sm text-muted-foreground">
+                                <span className="flex items-center gap-1">
+                                  <Calendar className="h-3 w-3" />
+                                  {new Date(event.event_date).toLocaleTimeString("tr-TR", {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                  })}
+                                </span>
+                                {event.location && (
+                                  <span className="flex items-center gap-1">
+                                    <MapPin className="h-3 w-3" />
+                                    {event.location}
+                                  </span>
+                                )}
+                                <span className="flex items-center gap-1">
+                                  <Users className="h-3 w-3" />
+                                  {event.event_attendees?.[0]?.count || 0} katılımcı
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="outline" size="sm" className="gap-2">
+                                  <CalendarPlus className="h-4 w-4" />
+                                  Takvime Ekle
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuItem
+                                  onClick={() => {
+                                    const url = getGoogleCalendarUrl({
+                                      title: event.title,
+                                      description: event.description,
+                                      location: event.location,
+                                      date: new Date(event.event_date).toISOString().split("T")[0],
+                                      time: new Date(event.event_date).toTimeString().split(" ")[0].slice(0, 5),
+                                    });
+                                    window.open(url, "_blank");
+                                  }}
+                                >
+                                  <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z" />
+                                  </svg>
+                                  Google Calendar
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onClick={() => {
+                                    const icsContent = generateICSFile({
+                                      title: event.title,
+                                      description: event.description,
+                                      location: event.location,
+                                      date: new Date(event.event_date).toISOString().split("T")[0],
+                                      time: new Date(event.event_date).toTimeString().split(" ")[0].slice(0, 5),
+                                    });
+                                    downloadICS(icsContent, `${event.title}.ics`);
+                                  }}
+                                >
+                                  <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11z" />
+                                  </svg>
+                                  Apple Calendar
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onClick={() => {
+                                    const url = getOutlookUrl({
+                                      title: event.title,
+                                      description: event.description,
+                                      location: event.location,
+                                      date: new Date(event.event_date).toISOString().split("T")[0],
+                                      time: new Date(event.event_date).toTimeString().split(" ")[0].slice(0, 5),
+                                    });
+                                    window.open(url, "_blank");
+                                  }}
+                                >
+                                  <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M13 3v18c0 .55.45 1 1 1h7c.55 0 1-.45 1-1V8l-6-6h-3z" />
+                                  </svg>
+                                  Outlook
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onClick={() => {
+                                    const icsContent = generateICSFile({
+                                      title: event.title,
+                                      description: event.description,
+                                      location: event.location,
+                                      date: new Date(event.event_date).toISOString().split("T")[0],
+                                      time: new Date(event.event_date).toTimeString().split(" ")[0].slice(0, 5),
+                                    });
+                                    downloadICS(icsContent, `${event.title}.ics`);
+                                  }}
+                                >
+                                  <Download className="mr-2 h-4 w-4" />
+                                  ICS Dosyası İndir
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                            <Button asChild size="sm">
+                              <Link href={`/events/${event.id}`}>Detay</Link>
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
             ) : (
+              // List View
               <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                 {events.map((event) => (
                   <Card key={event.id} className="hover:shadow-lg transition-shadow">
@@ -172,11 +353,81 @@ export default function EventsPage() {
                         )}
                       </div>
 
-                      <Button asChild className="w-full mt-4">
-                        <Link href={`/events/${event.id}`}>
-                          Detayları Gör
-                        </Link>
-                      </Button>
+                      <div className="flex gap-2">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="outline" size="sm" className="flex-1 gap-2">
+                              <CalendarPlus className="h-4 w-4" />
+                              Takvime Ekle
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="start">
+                            <DropdownMenuItem
+                              onClick={() => {
+                                const url = getGoogleCalendarUrl({
+                                  title: event.title,
+                                  description: event.description,
+                                  location: event.location,
+                                  date: new Date(event.event_date).toISOString().split("T")[0],
+                                  time: new Date(event.event_date).toTimeString().split(" ")[0].slice(0, 5),
+                                });
+                                window.open(url, "_blank");
+                              }}
+                            >
+                              Google Calendar
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => {
+                                const icsContent = generateICSFile({
+                                  title: event.title,
+                                  description: event.description,
+                                  location: event.location,
+                                  date: new Date(event.event_date).toISOString().split("T")[0],
+                                  time: new Date(event.event_date).toTimeString().split(" ")[0].slice(0, 5),
+                                });
+                                downloadICS(icsContent, `${event.title}.ics`);
+                              }}
+                            >
+                              Apple Calendar
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => {
+                                const url = getOutlookUrl({
+                                  title: event.title,
+                                  description: event.description,
+                                  location: event.location,
+                                  date: new Date(event.event_date).toISOString().split("T")[0],
+                                  time: new Date(event.event_date).toTimeString().split(" ")[0].slice(0, 5),
+                                });
+                                window.open(url, "_blank");
+                              }}
+                            >
+                              Outlook
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => {
+                                const icsContent = generateICSFile({
+                                  title: event.title,
+                                  description: event.description,
+                                  location: event.location,
+                                  date: new Date(event.event_date).toISOString().split("T")[0],
+                                  time: new Date(event.event_date).toTimeString().split(" ")[0].slice(0, 5),
+                                });
+                                downloadICS(icsContent, `${event.title}.ics`);
+                              }}
+                            >
+                              <Download className="mr-2 h-4 w-4" />
+                              ICS Dosyası İndir
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+
+                        <Button asChild className="flex-1">
+                          <Link href={`/events/${event.id}`}>
+                            Detayları Gör
+                          </Link>
+                        </Button>
+                      </div>
                     </CardContent>
                   </Card>
                 ))}
