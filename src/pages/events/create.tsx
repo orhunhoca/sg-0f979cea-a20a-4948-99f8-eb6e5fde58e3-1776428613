@@ -31,11 +31,32 @@ export default function CreateEventPage() {
     e.preventDefault();
     if (creating) return;
 
+    console.log("=== EVENT CREATE FORM SUBMIT ===");
+    console.log("Form Data:", { title, description, eventDate, eventTime, location, capacity, eventType });
+
     // Validation
-    if (!title || !eventDate || !location) {
+    if (!title?.trim()) {
       toast({
         title: "Hata",
-        description: "Lütfen tüm zorunlu alanları doldurun",
+        description: "Etkinlik başlığı gerekli",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!eventDate) {
+      toast({
+        title: "Hata",
+        description: "Tarih gerekli",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!location?.trim()) {
+      toast({
+        title: "Hata",
+        description: "Konum gerekli",
         variant: "destructive",
       });
       return;
@@ -45,30 +66,71 @@ export default function CreateEventPage() {
 
     const dateTime = `${eventDate}T${eventTime}:00`;
 
-    const { data, error } = await eventService.createEvent({
-      title,
-      description: description || null,
-      event_date: dateTime,
-      location: location || null,
-      capacity: capacity ? parseInt(capacity) : null,
-      is_approved: true,
-    });
+    try {
+      // Check authentication
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      console.log("Auth check:", { user: user?.id, authError });
 
-    if (error) {
+      if (!user) {
+        toast({
+          title: "Hata",
+          description: "Giriş yapmanız gerekiyor",
+          variant: "destructive",
+        });
+        setCreating(false);
+        router.push("/auth/login");
+        return;
+      }
+
+      // Prepare event data
+      const eventData = {
+        title: title.trim(),
+        description: description?.trim() || null,
+        event_date: dateTime,
+        location: location.trim(),
+        capacity: capacity ? parseInt(capacity) : null,
+        is_approved: true,
+      };
+
+      console.log("Sending event data:", eventData);
+
+      // Create event
+      const { data, error } = await eventService.createEvent(eventData);
+      
+      console.log("Create event result:", { data, error });
+
+      if (error) {
+        console.error("Event creation error details:", error);
+        toast({
+          title: "Hata",
+          description: error.message || "Etkinlik oluşturulamadı",
+          variant: "destructive",
+        });
+        setCreating(false);
+        return;
+      }
+
+      console.log("Event created successfully:", data);
+
       toast({
-        title: "Hata",
-        description: "Etkinlik oluşturulamadı",
-        variant: "destructive",
-      });
-    } else {
-      toast({
-        title: "Başarılı",
+        title: "Başarılı!",
         description: "Etkinlik oluşturuldu",
       });
-      router.push(`/events/${data.id}`);
-    }
 
-    setCreating(false);
+      // Redirect to events page
+      setTimeout(() => {
+        router.push("/events");
+      }, 500);
+
+    } catch (err: any) {
+      console.error("Unexpected error:", err);
+      toast({
+        title: "Hata",
+        description: err.message || "Bir hata oluştu",
+        variant: "destructive",
+      });
+      setCreating(false);
+    }
   };
 
   return (

@@ -79,7 +79,7 @@ export default function EventsPage() {
                     <div>
                       <h3 className="font-semibold mb-2 text-purple-900">Tüm Etkinlikler</h3>
                       <p className="text-sm text-muted-foreground">
-                        Fonzip üzerinden düzenlenen tüm etkinlikleri görüntüleyin ve katılın
+                        Dernek tarafından düzenlenen tüm etkinlikleri görüntüleyin ve katılın
                       </p>
                     </div>
                   </div>
@@ -90,7 +90,7 @@ export default function EventsPage() {
                       rel="noopener noreferrer"
                       className="gap-2"
                     >
-                      Fonzip Etkinlikleri
+                      Dernek Etkinlikleri
                       <ExternalLink className="h-4 w-4" />
                     </a>
                   </Button>
