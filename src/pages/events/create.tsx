@@ -32,7 +32,11 @@ export default function CreateEventPage() {
     if (creating) return;
 
     console.log("=== EVENT CREATE FORM SUBMIT ===");
-    console.log("Form Data:", { title, description, eventDate, eventTime, location, capacity, eventType });
+    console.log("Raw Form Data:", { title, description, eventDate, eventTime, location, capacity, eventType });
+    console.log("Date value:", eventDate);
+    console.log("Time value:", eventTime);
+    console.log("Title value:", title);
+    console.log("Location value:", location);
 
     // Validation
     if (!title?.trim()) {
@@ -155,10 +159,10 @@ export default function CreateEventPage() {
               <CardContent>
                 <form onSubmit={handleSubmit} className="space-y-6">
                   <div className="space-y-2">
-                    <Label htmlFor="title">Etkinlik Adı *</Label>
+                    <Label htmlFor="title">Etkinlik Başlığı *</Label>
                     <Input
                       id="title"
-                      placeholder="Örn: Yıllık Mezunlar Buluşması 2026"
+                      placeholder="Örn: Mezunlar Buluşması 2026"
                       value={title}
                       onChange={(e) => setTitle(e.target.value)}
                       required
