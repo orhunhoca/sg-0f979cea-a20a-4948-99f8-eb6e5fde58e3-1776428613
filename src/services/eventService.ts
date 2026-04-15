@@ -55,19 +55,43 @@ export const eventService = {
     return { data, error };
   },
 
-  async createEvent(event: EventInsert) {
-    const { data: { user } } = await supabase.auth.getUser();
-    
-    const { data, error } = await supabase
-      .from("events")
-      .insert({
-        ...event,
-        organizer_id: user?.id,
-      })
-      .select()
-      .single();
+  // Create event
+  async createEvent(event: any): Promise<{ data: Event | null; error: any }> {
+    try {
+      // Combine date and time into event_date timestamp
+      let eventDate = event.date;
+      if (event.time) {
+        eventDate = `${event.date}T${event.time}:00`;
+      } else {
+        eventDate = `${event.date}T00:00:00`;
+      }
 
-    return { data, error };
+      // Map form fields to database columns
+      const dbEvent = {
+        title: event.title,
+        description: event.description || null,
+        event_date: eventDate,
+        location: event.location || null,
+        capacity: event.max_attendees || null,
+        image_url: event.image_url || null,
+        organizer_id: event.organizer_id,
+        is_approved: false, // Default to not approved
+      };
+
+      console.log("Mapped event data for database:", dbEvent);
+
+      const { data, error } = await supabase
+        .from("events")
+        .insert(dbEvent)
+        .select()
+        .single();
+
+      console.log("createEvent result:", { data, error });
+      return { data, error };
+    } catch (err: any) {
+      console.error("createEvent service error:", err);
+      return { data: null, error: err };
+    }
   },
 
   async updateEvent(eventId: string, updates: EventUpdate) {
