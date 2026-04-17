@@ -22,34 +22,21 @@ export const eventService = {
     return { data: Array.isArray(data) ? data : [], error };
   },
 
-  async getAllEvents() {
+  // Get upcoming events
+  async getUpcomingEvents(limit = 3): Promise<{ data: Event[] | null; error: any }> {
     const { data, error } = await supabase
       .from("events")
       .select(`
         *,
-        organizer:profiles!events_organizer_id_fkey(id, full_name, avatar_url),
+        profiles!events_organizer_id_fkey(id, full_name, avatar_url),
         event_attendees(count)
       `)
-      .eq("is_approved", true)
-      .order("event_date", { ascending: true });
-
-    return { data, error };
-  },
-
-  async getUpcomingEvents() {
-    const { data, error } = await supabase
-      .from("events")
-      .select(`
-        *,
-        organizer:profiles!events_organizer_id_fkey(id, full_name, avatar_url),
-        event_attendees(count)
-      `)
-      .eq("is_approved", true)
       .gte("event_date", new Date().toISOString())
       .order("event_date", { ascending: true })
-      .limit(10);
+      .limit(limit);
 
-    return { data, error };
+    console.log("getUpcomingEvents:", { data, error });
+    return { data: Array.isArray(data) ? data : [], error };
   },
 
   async getEventById(eventId: string) {
@@ -90,7 +77,7 @@ export const eventService = {
         capacity: event.max_attendees || null,
         image_url: event.image_url || null,
         organizer_id: event.organizer_id,
-        is_approved: false, // Default to not approved
+        is_approved: true, // Default to approved so it shows up immediately
       };
 
       console.log("Mapped event data for database:", dbEvent);
