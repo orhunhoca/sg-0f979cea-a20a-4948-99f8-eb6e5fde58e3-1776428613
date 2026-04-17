@@ -12,34 +12,36 @@ import { useToast } from "@/hooks/use-toast";
 import { eventService } from "@/services/eventService";
 import { supabase } from "@/integrations/supabase/client";
 import { Calendar, MapPin, Users, Loader2 } from "lucide-react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export default function CreateEventPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const [creating, setCreating] = useState(false);
+  const [loading, setLoading] = useState(false);
 
+  // Separate state for each field
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [eventDate, setEventDate] = useState("");
-  const [eventTime, setEventTime] = useState("");
+  const [date, setDate] = useState("");
+  const [time, setTime] = useState("");
   const [location, setLocation] = useState("");
-  const [capacity, setCapacity] = useState("");
-  const [eventType, setEventType] = useState("");
+  const [maxAttendees, setMaxAttendees] = useState<number | null>(null);
+  const [imageUrl, setImageUrl] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (creating) return;
+    if (loading) return;
 
-    console.log("=== EVENT CREATE FORM SUBMIT ===");
-    console.log("Raw Form Data:", { title, description, eventDate, eventTime, location, capacity, eventType });
-    console.log("Date value:", eventDate);
-    console.log("Time value:", eventTime);
-    console.log("Title value:", title);
-    console.log("Location value:", location);
+    console.log("=== FORM SUBMIT ===");
+    console.log("Title:", title);
+    console.log("Description:", description);
+    console.log("Date:", date);
+    console.log("Time:", time);
+    console.log("Location:", location);
+    console.log("Max Attendees:", maxAttendees);
+    console.log("Image URL:", imageUrl);
 
     // Validation
-    if (!title?.trim()) {
+    if (!title.trim()) {
       toast({
         title: "Hata",
         description: "Etkinlik başlığı gerekli",
@@ -48,7 +50,7 @@ export default function CreateEventPage() {
       return;
     }
 
-    if (!eventDate) {
+    if (!date) {
       toast({
         title: "Hata",
         description: "Tarih gerekli",
@@ -57,7 +59,7 @@ export default function CreateEventPage() {
       return;
     }
 
-    if (!location?.trim()) {
+    if (!location.trim()) {
       toast({
         title: "Hata",
         description: "Konum gerekli",
@@ -66,14 +68,12 @@ export default function CreateEventPage() {
       return;
     }
 
-    setCreating(true);
-
-    const dateTime = `${eventDate}T${eventTime}:00`;
+    setLoading(true);
 
     try {
-      // Check authentication
+      // Check auth
       const { data: { user }, error: authError } = await supabase.auth.getUser();
-      console.log("Auth check:", { user: user?.id, authError });
+      console.log("Auth:", { userId: user?.id, authError });
 
       if (!user) {
         toast({
@@ -81,83 +81,86 @@ export default function CreateEventPage() {
           description: "Giriş yapmanız gerekiyor",
           variant: "destructive",
         });
-        setCreating(false);
+        setLoading(false);
         router.push("/auth/login");
         return;
       }
 
-      // Prepare event data
+      // Build event data
       const eventData = {
         title: title.trim(),
-        description: description?.trim() || null,
-        event_date: dateTime,
+        description: description.trim() || null,
+        date: date,
+        time: time || null,
         location: location.trim(),
-        capacity: capacity ? parseInt(capacity) : null,
-        is_approved: true,
+        max_attendees: maxAttendees,
+        image_url: imageUrl.trim() || null,
+        organizer_id: user.id,
       };
 
-      console.log("Sending event data:", eventData);
+      console.log("Event data to send:", eventData);
 
       // Create event
       const { data, error } = await eventService.createEvent(eventData);
-      
-      console.log("Create event result:", { data, error });
+
+      console.log("Service response:", { data, error });
 
       if (error) {
-        console.error("Event creation error details:", error);
+        console.error("Create error:", error);
         toast({
           title: "Hata",
           description: error.message || "Etkinlik oluşturulamadı",
           variant: "destructive",
         });
-        setCreating(false);
+        setLoading(false);
         return;
       }
 
-      console.log("Event created successfully:", data);
+      console.log("SUCCESS! Event created:", data);
 
       toast({
         title: "Başarılı!",
         description: "Etkinlik oluşturuldu",
       });
 
-      // Redirect to events page
+      // Redirect
       setTimeout(() => {
         router.push("/events");
       }, 500);
 
     } catch (err: any) {
-      console.error("Unexpected error:", err);
+      console.error("Catch error:", err);
       toast({
         title: "Hata",
-        description: err.message || "Bir hata oluştu",
+        description: err.message || "Beklenmeyen bir hata oluştu",
         variant: "destructive",
       });
-      setCreating(false);
+      setLoading(false);
     }
   };
 
   return (
     <>
-      <SEO 
-        title="Etkinlik Oluştur - Mezunlar Derneği"
-        description="Yeni etkinlik oluşturun"
-      />
-      
+      <Head>
+        <SEO title="Yeni Etkinlik Oluştur" />
+      </Head>
       <div className="min-h-screen bg-background">
         <Navigation />
-
         <main className="container py-8">
           <div className="max-w-2xl mx-auto">
             <Card>
               <CardHeader>
-                <CardTitle className="text-2xl font-heading">Yeni Etkinlik Oluştur</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  <Calendar className="h-5 w-5" />
+                  Yeni Etkinlik Oluştur
+                </CardTitle>
                 <CardDescription>
-                  Mezunlar için etkinlik düzenleyin
+                  Mezunlar için yeni bir etkinlik düzenleyin
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleSubmit} className="space-y-6">
+                  {/* Title */}
                   <div className="space-y-2">
                     <Label htmlFor="title">Etkinlik Başlığı *</Label>
                     <Input
@@ -165,107 +168,116 @@ export default function CreateEventPage() {
                       placeholder="Örn: Mezunlar Buluşması 2026"
                       value={title}
                       onChange={(e) => setTitle(e.target.value)}
+                      disabled={loading}
                       required
                     />
                   </div>
 
+                  {/* Description */}
                   <div className="space-y-2">
                     <Label htmlFor="description">Açıklama</Label>
                     <Textarea
                       id="description"
                       placeholder="Etkinlik hakkında detaylı bilgi..."
+                      rows={4}
                       value={description}
                       onChange={(e) => setDescription(e.target.value)}
-                      rows={5}
+                      disabled={loading}
                     />
                   </div>
 
-                  <div className="grid gap-4 md:grid-cols-2">
+                  {/* Date and Time */}
+                  <div className="grid gap-4 sm:grid-cols-2">
                     <div className="space-y-2">
                       <Label htmlFor="date">Tarih *</Label>
                       <Input
                         id="date"
                         type="date"
-                        value={eventDate}
-                        onChange={(e) => setEventDate(e.target.value)}
+                        value={date}
+                        onChange={(e) => {
+                          console.log("Date changed:", e.target.value);
+                          setDate(e.target.value);
+                        }}
+                        disabled={loading}
                         required
                       />
                     </div>
-
                     <div className="space-y-2">
-                      <Label htmlFor="time">Saat *</Label>
+                      <Label htmlFor="time">Saat</Label>
                       <Input
                         id="time"
                         type="time"
-                        value={eventTime}
-                        onChange={(e) => setEventTime(e.target.value)}
-                        required
+                        value={time}
+                        onChange={(e) => {
+                          console.log("Time changed:", e.target.value);
+                          setTime(e.target.value);
+                        }}
+                        disabled={loading}
                       />
                     </div>
                   </div>
 
+                  {/* Location */}
                   <div className="space-y-2">
-                    <Label htmlFor="location">Konum</Label>
+                    <Label htmlFor="location">Konum *</Label>
                     <div className="relative">
                       <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                       <Input
                         id="location"
-                        placeholder="Örn: Hilton Oteli, İstanbul"
+                        placeholder="Örn: İstanbul, Beşiktaş"
+                        className="pl-10"
                         value={location}
                         onChange={(e) => setLocation(e.target.value)}
-                        className="pl-9"
+                        disabled={loading}
+                        required
                       />
                     </div>
                   </div>
 
+                  {/* Max Attendees */}
                   <div className="space-y-2">
-                    <Label htmlFor="capacity">Kapasite (Opsiyonel)</Label>
+                    <Label htmlFor="maxAttendees">Maksimum Katılımcı Sayısı</Label>
                     <div className="relative">
                       <Users className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                       <Input
-                        id="capacity"
+                        id="maxAttendees"
                         type="number"
-                        placeholder="Maksimum katılımcı sayısı"
-                        value={capacity}
-                        onChange={(e) => setCapacity(e.target.value)}
-                        className="pl-9"
                         min="1"
+                        placeholder="Örn: 50"
+                        className="pl-10"
+                        value={maxAttendees || ""}
+                        onChange={(e) => setMaxAttendees(e.target.value ? parseInt(e.target.value) : null)}
+                        disabled={loading}
                       />
                     </div>
                   </div>
 
+                  {/* Image URL */}
                   <div className="space-y-2">
-                    <Label htmlFor="event_type">Etkinlik Tipi</Label>
-                    <Select value={eventType} onValueChange={setEventType}>
-                      <SelectTrigger id="event_type">
-                        <SelectValue placeholder="Seçin" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="meetup">Buluşma</SelectItem>
-                        <SelectItem value="seminar">Seminer</SelectItem>
-                        <SelectItem value="webinar">Webinar</SelectItem>
-                        <SelectItem value="workshop">Workshop</SelectItem>
-                        <SelectItem value="social">Sosyal Etkinlik</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <Label htmlFor="imageUrl">Etkinlik Görseli URL (Opsiyonel)</Label>
+                    <Input
+                      id="imageUrl"
+                      type="url"
+                      placeholder="https://example.com/image.jpg"
+                      value={imageUrl}
+                      onChange={(e) => setImageUrl(e.target.value)}
+                      disabled={loading}
+                    />
                   </div>
 
-                  <div className="flex gap-3">
+                  {/* Buttons */}
+                  <div className="flex gap-4">
+                    <Button type="submit" disabled={loading} className="flex-1">
+                      {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                      {loading ? "Oluşturuluyor..." : "Etkinlik Oluştur"}
+                    </Button>
                     <Button
                       type="button"
                       variant="outline"
-                      onClick={() => router.back()}
-                      className="flex-1"
+                      onClick={() => router.push("/events")}
+                      disabled={loading}
                     >
                       İptal
-                    </Button>
-                    <Button
-                      type="submit"
-                      disabled={creating}
-                      className="flex-1"
-                    >
-                      {creating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                      Etkinlik Oluştur
                     </Button>
                   </div>
                 </form>
