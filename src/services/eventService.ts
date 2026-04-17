@@ -7,6 +7,21 @@ type EventUpdate = Database["public"]["Tables"]["events"]["Update"];
 type EventAttendee = Database["public"]["Tables"]["event_attendees"]["Row"];
 
 export const eventService = {
+  // Get all events
+  async getEvents(): Promise<{ data: Event[] | null; error: any }> {
+    const { data, error } = await supabase
+      .from("events")
+      .select(`
+        *,
+        profiles!events_organizer_id_fkey(id, full_name, avatar_url),
+        event_attendees(count)
+      `)
+      .order("event_date", { ascending: true });
+
+    console.log("getEvents:", { data, error });
+    return { data: Array.isArray(data) ? data : [], error };
+  },
+
   async getAllEvents() {
     const { data, error } = await supabase
       .from("events")

@@ -166,14 +166,16 @@ export function Navigation() {
           <Link href="/brands" className="text-sm font-medium hover:text-primary transition-colors">
             İndirimli Markalar
           </Link>
-          <a 
-            href="https://fonzip.com/eymeder/etkinlikler" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="text-sm font-medium hover:text-primary transition-colors"
+          <NavigationMenuLink
+            href="/events"
+            className={cn(
+              navigationMenuTriggerStyle(),
+              "text-base font-medium",
+              router.pathname === "/events" && "bg-accent text-accent-foreground"
+            )}
           >
             Etkinlikler
-          </a>
+          </NavigationMenuLink>
           <Link href="/jobs" className="text-sm font-medium hover:text-primary transition-colors">
             İş İlanları
           </Link>
@@ -380,15 +382,13 @@ export function Navigation() {
             >
               İndirimli Markalar
             </Link>
-            <a 
-              href="https://fonzip.com/eymeder/etkinlikler" 
-              target="_blank" 
-              rel="noopener noreferrer"
+            <Link 
+              href="/events" 
               className="block px-4 py-2 text-sm font-medium hover:bg-muted rounded-md transition-colors"
               onClick={() => setMobileMenuOpen(false)}
             >
               Etkinlikler
-            </a>
+            </Link>
             <Link 
               href="/jobs" 
               className="block px-4 py-2 text-sm font-medium hover:bg-muted rounded-md transition-colors"

@@ -76,37 +76,7 @@ export default function EventsPage() {
               </p>
             </div>
 
-            {/* Fonzip Events Link */}
-            <Card className="mb-8 bg-gradient-to-r from-purple-500/10 via-purple-400/10 to-purple-500/10 border-purple-500/20">
-              <CardContent className="pt-6">
-                <div className="flex items-center justify-between gap-4 flex-wrap">
-                  <div className="flex items-start gap-4">
-                    <div className="bg-purple-500/10 p-3 rounded-full">
-                      <Calendar className="h-6 w-6 text-purple-600" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold mb-2 text-purple-900">Tüm Etkinlikler</h3>
-                      <p className="text-sm text-muted-foreground">
-                        Dernek tarafından düzenlenen tüm etkinlikleri görüntüleyin ve katılın
-                      </p>
-                    </div>
-                  </div>
-                  <Button asChild size="lg" className="bg-purple-600 hover:bg-purple-700">
-                    <a 
-                      href="https://fonzip.com/eymeder/etkinlikler" 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="gap-2"
-                    >
-                      Dernek Etkinlikleri
-                      <ExternalLink className="h-4 w-4" />
-                    </a>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Create Event Button */}
+            {/* Create Event Button + View Toggle */}
             <div className="flex items-center justify-between mb-8">
               <div>
                 <h1 className="text-3xl font-heading font-bold">Etkinlikler</h1>
@@ -143,6 +113,32 @@ export default function EventsPage() {
                 </Button>
               </div>
             </div>
+
+            {/* Fonzip Events Link - Smaller and below header */}
+            <Card className="mb-6 border-purple-200 bg-purple-50/50">
+              <CardContent className="py-4">
+                <div className="flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <Calendar className="h-5 w-5 text-purple-600" />
+                    <div>
+                      <p className="font-medium text-sm">Dernek tarafından düzenlenen resmi etkinlikler</p>
+                      <p className="text-xs text-muted-foreground">Fonzip üzerinden RSVP ve detaylı bilgi</p>
+                    </div>
+                  </div>
+                  <Button asChild variant="outline" size="sm" className="shrink-0">
+                    <a 
+                      href="https://fonzip.com/eymeder/etkinlikler" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="gap-2"
+                    >
+                      Dernek Etkinlikleri
+                      <ExternalLink className="h-3 w-3" />
+                    </a>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
 
             {events.length === 0 ? (
               <Card>
