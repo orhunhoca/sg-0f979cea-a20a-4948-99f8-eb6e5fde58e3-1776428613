@@ -1,51 +1,51 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
+import Head from "next/head";
 import { SEO } from "@/components/SEO";
 import { Navigation } from "@/components/Navigation";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
-import { authService } from "@/services/authService";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { profileService } from "@/services/profileService";
-import { brandService } from "@/services/brandService";
+import { eventService } from "@/services/eventService";
+import { jobService } from "@/services/jobService";
+import { newsService } from "@/services/newsService";
+import { productService } from "@/services/productService";
+import { orderService } from "@/services/orderService";
+import { authService } from "@/services/authService";
 import { supabase } from "@/integrations/supabase/client";
+import { 
+  Users, 
+  Calendar, 
+  Briefcase, 
+  Newspaper, 
+  ShieldCheck, 
+  Loader2, 
+  UserPlus,
+  Package,
+  ShoppingCart,
+  Plus,
+  Edit,
+  Trash2,
+  Eye,
+  EyeOff,
+  Save,
+  X,
+  Edit2,
+  Download,
+  Shield,
+  Tag,
+  Upload
+} from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Upload, Trash2, Users, Download, CheckCircle2, XCircle, Save, X, Tag, Plus, Edit2, Eye, EyeOff, Shield } from "lucide-react";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import {
-  Tabs,
-  TabsList,
-  TabsTrigger,
-  TabsContent,
-} from "@/components/ui/tabs";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 
 interface MembershipRecord {
   id: string;
@@ -83,6 +83,17 @@ export default function AdminPage() {
     is_active: true,
     display_order: 0,
   });
+
+  // Product form
+  const [productDialogOpen, setProductDialogOpen] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<any>(null);
+  const [productName, setProductName] = useState("");
+  const [productDescription, setProductDescription] = useState("");
+  const [productPrice, setProductPrice] = useState("");
+  const [productStock, setProductStock] = useState("");
+  const [productImageUrl, setProductImageUrl] = useState("");
+  const [productCategory, setProductCategory] = useState("");
+  const [productIsActive, setProductIsActive] = useState(true);
 
   useEffect(() => {
     checkAdminAccess();
@@ -147,6 +158,21 @@ export default function AdminPage() {
     if (!error && data) {
       setMemberships(data);
     }
+  };
+
+  const loadNews = async () => {
+    const { data } = await newsService.getAllNews();
+    if (data) setNewsItems(data);
+  };
+
+  const loadProducts = async () => {
+    const { data } = await productService.getAllProducts();
+    if (data) setProducts(data);
+  };
+
+  const loadOrders = async () => {
+    const { data } = await orderService.getAllOrders();
+    if (data) setOrders(data);
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -336,6 +362,108 @@ export default function AdminPage() {
     }
   };
 
+  const handleDeleteNews = async (id: string) => {
+    if (!confirm("Bu haberi silmek istediğinizden emin misiniz?")) return;
+    const { error } = await newsService.deleteNews(id);
+    if (error) {
+      toast({ title: "Hata", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Haber silindi" });
+      loadNews();
+    }
+  };
+
+  const openProductDialog = (product?: any) => {
+    if (product) {
+      setEditingProduct(product);
+      setProductName(product.name);
+      setProductDescription(product.description || "");
+      setProductPrice(product.price.toString());
+      setProductStock(product.stock.toString());
+      setProductImageUrl(product.image_url || "");
+      setProductCategory(product.category || "");
+      setProductIsActive(product.is_active);
+    } else {
+      setEditingProduct(null);
+      setProductName("");
+      setProductDescription("");
+      setProductPrice("");
+      setProductStock("");
+      setProductImageUrl("");
+      setProductCategory("");
+      setProductIsActive(true);
+    }
+    setProductDialogOpen(true);
+  };
+
+  const handleSaveProduct = async () => {
+    if (!productName || !productPrice || !productStock) {
+      toast({ title: "Hata", description: "Lütfen zorunlu alanları doldurun", variant: "destructive" });
+      return;
+    }
+
+    const productData = {
+      name: productName,
+      description: productDescription,
+      price: parseFloat(productPrice),
+      stock: parseInt(productStock),
+      image_url: productImageUrl,
+      category: productCategory,
+      is_active: productIsActive,
+    };
+
+    if (editingProduct) {
+      const { error } = await productService.updateProduct(editingProduct.id, productData);
+      if (error) {
+        toast({ title: "Hata", description: error.message, variant: "destructive" });
+      } else {
+        toast({ title: "Ürün güncellendi" });
+        loadProducts();
+        setProductDialogOpen(false);
+      }
+    } else {
+      const { error } = await productService.createProduct(productData);
+      if (error) {
+        toast({ title: "Hata", description: error.message, variant: "destructive" });
+      } else {
+        toast({ title: "Ürün oluşturuldu" });
+        loadProducts();
+        setProductDialogOpen(false);
+      }
+    }
+  };
+
+  const handleDeleteProduct = async (id: string) => {
+    if (!confirm("Bu ürünü silmek istediğinizden emin misiniz?")) return;
+    const { error } = await productService.deleteProduct(id);
+    if (error) {
+      toast({ title: "Hata", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Ürün silindi" });
+      loadProducts();
+    }
+  };
+
+  const handleToggleProductStatus = async (id: string, isActive: boolean) => {
+    const { error } = await productService.toggleProductStatus(id, isActive);
+    if (error) {
+      toast({ title: "Hata", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: isActive ? "Ürün aktif edildi" : "Ürün pasif edildi" });
+      loadProducts();
+    }
+  };
+
+  const handleUpdateOrderStatus = async (orderId: string, status: string) => {
+    const { error } = await orderService.updateOrderStatus(orderId, status as any);
+    if (error) {
+      toast({ title: "Hata", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Sipariş durumu güncellendi" });
+      loadOrders();
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -392,11 +520,36 @@ export default function AdminPage() {
             </Card>
 
             {/* SEKMELER */}
-            <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className="w-full">
-              <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="users"><Users className="h-4 w-4 mr-2" /> Kullanıcılar</TabsTrigger>
-                <TabsTrigger value="roles"><Shield className="h-4 w-4 mr-2" /> Roller</TabsTrigger>
-                <TabsTrigger value="brands"><Tag className="h-4 w-4 mr-2" /> Markalar</TabsTrigger>
+            <Tabs defaultValue="users" className="space-y-6">
+              <TabsList className="grid grid-cols-3 lg:grid-cols-7 gap-2">
+                <TabsTrigger value="users" className="flex items-center gap-2">
+                  <Users className="h-4 w-4" />
+                  Kullanıcılar
+                </TabsTrigger>
+                <TabsTrigger value="events" className="flex items-center gap-2">
+                  <Calendar className="h-4 w-4" />
+                  Etkinlikler
+                </TabsTrigger>
+                <TabsTrigger value="jobs" className="flex items-center gap-2">
+                  <Briefcase className="h-4 w-4" />
+                  İş İlanları
+                </TabsTrigger>
+                <TabsTrigger value="news" className="flex items-center gap-2">
+                  <Newspaper className="h-4 w-4" />
+                  Haberler
+                </TabsTrigger>
+                <TabsTrigger value="products" className="flex items-center gap-2">
+                  <Package className="h-4 w-4" />
+                  Ürünler
+                </TabsTrigger>
+                <TabsTrigger value="orders" className="flex items-center gap-2">
+                  <ShoppingCart className="h-4 w-4" />
+                  Siparişler
+                </TabsTrigger>
+                <TabsTrigger value="roles" className="flex items-center gap-2">
+                  <ShieldCheck className="h-4 w-4" />
+                  Yetkiler
+                </TabsTrigger>
               </TabsList>
 
               {/* SEKME 1: KULLANICILAR */}
@@ -591,6 +744,305 @@ export default function AdminPage() {
                         ))}
                       </div>
                     )}
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              {/* Products Tab */}
+              <TabsContent value="products">
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between">
+                    <div>
+                      <CardTitle>Ürün Yönetimi</CardTitle>
+                      <CardDescription>Mezun Store ürünlerini yönetin</CardDescription>
+                    </div>
+                    <Dialog open={productDialogOpen} onOpenChange={setProductDialogOpen}>
+                      <DialogTrigger asChild>
+                        <Button onClick={() => openProductDialog()}>
+                          <Plus className="h-4 w-4 mr-2" />
+                          Yeni Ürün
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="max-w-2xl">
+                        <DialogHeader>
+                          <DialogTitle>{editingProduct ? "Ürünü Düzenle" : "Yeni Ürün Ekle"}</DialogTitle>
+                          <DialogDescription>
+                            Mezun Store için ürün bilgilerini girin
+                          </DialogDescription>
+                        </DialogHeader>
+                        <div className="space-y-4">
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <Label htmlFor="product_name">Ürün Adı *</Label>
+                              <Input
+                                id="product_name"
+                                value={productName}
+                                onChange={(e) => setProductName(e.target.value)}
+                                placeholder="Eyüboğlu Tişört"
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="product_category">Kategori</Label>
+                              <Input
+                                id="product_category"
+                                value={productCategory}
+                                onChange={(e) => setProductCategory(e.target.value)}
+                                placeholder="Giyim"
+                              />
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="product_description">Açıklama</Label>
+                            <Textarea
+                              id="product_description"
+                              value={productDescription}
+                              onChange={(e) => setProductDescription(e.target.value)}
+                              rows={3}
+                              placeholder="Ürün açıklaması..."
+                            />
+                          </div>
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <Label htmlFor="product_price">Fiyat (₺) *</Label>
+                              <Input
+                                id="product_price"
+                                type="number"
+                                step="0.01"
+                                value={productPrice}
+                                onChange={(e) => setProductPrice(e.target.value)}
+                                placeholder="199.99"
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="product_stock">Stok Adedi *</Label>
+                              <Input
+                                id="product_stock"
+                                type="number"
+                                value={productStock}
+                                onChange={(e) => setProductStock(e.target.value)}
+                                placeholder="50"
+                              />
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="product_image">Ürün Görseli URL</Label>
+                            <Input
+                              id="product_image"
+                              value={productImageUrl}
+                              onChange={(e) => setProductImageUrl(e.target.value)}
+                              placeholder="https://example.com/image.jpg"
+                            />
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <div className="space-y-0.5">
+                              <Label htmlFor="product_active">Aktif</Label>
+                              <p className="text-sm text-muted-foreground">
+                                Ürün mağazada görünsün mü?
+                              </p>
+                            </div>
+                            <Switch
+                              id="product_active"
+                              checked={productIsActive}
+                              onCheckedChange={setProductIsActive}
+                            />
+                          </div>
+                          <div className="flex gap-3">
+                            <Button onClick={handleSaveProduct} className="flex-1">
+                              {editingProduct ? "Güncelle" : "Oluştur"}
+                            </Button>
+                            <Button variant="outline" onClick={() => setProductDialogOpen(false)} className="flex-1">
+                              İptal
+                            </Button>
+                          </div>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+                  </CardHeader>
+                  <CardContent>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Ürün</TableHead>
+                          <TableHead>Kategori</TableHead>
+                          <TableHead>Fiyat</TableHead>
+                          <TableHead>Stok</TableHead>
+                          <TableHead>Durum</TableHead>
+                          <TableHead className="text-right">İşlemler</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {products.map((product) => (
+                          <TableRow key={product.id}>
+                            <TableCell>
+                              <div className="flex items-center gap-3">
+                                {product.image_url && (
+                                  <img
+                                    src={product.image_url}
+                                    alt={product.name}
+                                    className="h-10 w-10 rounded object-cover"
+                                  />
+                                )}
+                                <div>
+                                  <p className="font-medium">{product.name}</p>
+                                  <p className="text-sm text-muted-foreground line-clamp-1">
+                                    {product.description}
+                                  </p>
+                                </div>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              {product.category && (
+                                <Badge variant="outline">{product.category}</Badge>
+                              )}
+                            </TableCell>
+                            <TableCell>{product.price.toLocaleString("tr-TR")} ₺</TableCell>
+                            <TableCell>
+                              <Badge variant={product.stock > 10 ? "default" : "destructive"}>
+                                {product.stock} adet
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleToggleProductStatus(product.id, !product.is_active)}
+                              >
+                                {product.is_active ? (
+                                  <Eye className="h-4 w-4 text-green-600" />
+                                ) : (
+                                  <EyeOff className="h-4 w-4 text-muted-foreground" />
+                                )}
+                              </Button>
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <div className="flex justify-end gap-2">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => openProductDialog(product)}
+                                >
+                                  <Edit className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleDeleteProduct(product.id)}
+                                >
+                                  <Trash2 className="h-4 w-4 text-destructive" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              {/* Orders Tab */}
+              <TabsContent value="orders">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Sipariş Yönetimi</CardTitle>
+                    <CardDescription>Tüm siparişleri görüntüleyin ve yönetin</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Sipariş No</TableHead>
+                          <TableHead>Kullanıcı</TableHead>
+                          <TableHead>Toplam</TableHead>
+                          <TableHead>Ödeme</TableHead>
+                          <TableHead>Durum</TableHead>
+                          <TableHead>Tarih</TableHead>
+                          <TableHead className="text-right">İşlemler</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {orders.map((order) => (
+                          <TableRow key={order.id}>
+                            <TableCell className="font-mono text-sm">
+                              {order.id.slice(0, 8)}
+                            </TableCell>
+                            <TableCell>
+                              {order.profiles?.full_name || order.profiles?.email}
+                            </TableCell>
+                            <TableCell className="font-medium">
+                              {order.total_amount.toLocaleString("tr-TR")} ₺
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant="outline">
+                                {order.payment_method === "bank_transfer" ? "Havale" : "Kredi Kartı"}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <Select
+                                defaultValue={order.status}
+                                onValueChange={(val) => handleUpdateOrderStatus(order.id, val)}
+                              >
+                                <SelectTrigger className="w-[140px]">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="pending">Bekliyor</SelectItem>
+                                  <SelectItem value="paid">Ödendi</SelectItem>
+                                  <SelectItem value="shipped">Kargoda</SelectItem>
+                                  <SelectItem value="delivered">Teslim Edildi</SelectItem>
+                                  <SelectItem value="cancelled">İptal</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </TableCell>
+                            <TableCell className="text-sm text-muted-foreground">
+                              {new Date(order.created_at).toLocaleDateString("tr-TR")}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <Dialog>
+                                <DialogTrigger asChild>
+                                  <Button variant="outline" size="sm">Detay</Button>
+                                </DialogTrigger>
+                                <DialogContent className="max-w-2xl">
+                                  <DialogHeader>
+                                    <DialogTitle>Sipariş Detayları</DialogTitle>
+                                    <DialogDescription>
+                                      Sipariş No: {order.id}
+                                    </DialogDescription>
+                                  </DialogHeader>
+                                  <div className="space-y-4">
+                                    <div>
+                                      <h4 className="font-semibold mb-2">Müşteri Bilgileri</h4>
+                                      <p className="text-sm">
+                                        <strong>Ad:</strong> {order.profiles?.full_name}
+                                      </p>
+                                      <p className="text-sm">
+                                        <strong>Email:</strong> {order.profiles?.email}
+                                      </p>
+                                      <p className="text-sm">
+                                        <strong>Telefon:</strong> {order.shipping_phone}
+                                      </p>
+                                    </div>
+                                    <div>
+                                      <h4 className="font-semibold mb-2">Teslimat Adresi</h4>
+                                      <p className="text-sm">{order.shipping_address}</p>
+                                      <p className="text-sm">
+                                        {order.shipping_city} {order.shipping_zip}
+                                      </p>
+                                    </div>
+                                    {order.notes && (
+                                      <div>
+                                        <h4 className="font-semibold mb-2">Sipariş Notu</h4>
+                                        <p className="text-sm text-muted-foreground">{order.notes}</p>
+                                      </div>
+                                    )}
+                                  </div>
+                                </DialogContent>
+                              </Dialog>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
                   </CardContent>
                 </Card>
               </TabsContent>
