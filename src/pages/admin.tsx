@@ -21,6 +21,7 @@ import { newsService } from "@/services/newsService";
 import { productService } from "@/services/productService";
 import { orderService } from "@/services/orderService";
 import { authService } from "@/services/authService";
+import { brandService } from "@/services/brandService";
 import { supabase } from "@/integrations/supabase/client";
 import { 
   Users, 
@@ -59,12 +60,15 @@ interface MembershipRecord {
 export default function AdminPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState<"users" | "roles" | "brands">("users");
+  const [activeTab, setActiveTab] = useState<string>("users");
   
   // States
   const [users, setUsers] = useState<any[]>([]);
   const [brands, setBrands] = useState<any[]>([]);
-  const [memberships, setMemberships] = useState<MembershipRecord[]>([]);
+  const [memberships, setMemberships] = useState<any[]>([]);
+  const [newsItems, setNewsItems] = useState<any[]>([]);
+  const [products, setProducts] = useState<any[]>([]);
+  const [orders, setOrders] = useState<any[]>([]);
   
   // Loading states
   const [loading, setLoading] = useState(true);
@@ -106,18 +110,29 @@ export default function AdminPage() {
       return;
     }
 
-    const { data: profile } = await profileService.getProfileById(session.user.id);
-    
-    // Geçici olarak tüm giriş yapanları admin paneline alıyoruz (test için)
-    // const userProfile = profile as any;
-    // if (!userProfile?.is_admin) {
-    //   router.push("/");
-    //   return;
-    // }
+    const { data: role } = await supabase
+      .from("roles")
+      .select("*")
+      .eq("user_id", session.user.id)
+      .single();
 
-    loadUsers();
-    loadBrands();
-    loadMemberships();
+    if (!role || (role.role !== "admin" && role.role !== "moderator")) {
+      toast({ title: "Erişim Reddedildi", description: "Bu sayfayı görüntüleme yetkiniz yok.", variant: "destructive" });
+      router.push("/");
+      return;
+    }
+
+    loadData();
+  };
+
+  const loadData = async () => {
+    await loadUsers();
+    await loadBrands();
+    await loadMemberships();
+    await loadNews();
+    await loadProducts();
+    await loadOrders();
+    setLoading(false);
   };
 
   const loadUsers = async () => {
