@@ -20,7 +20,12 @@ import {
   MessageSquare, 
   UserPlus, 
   Tag,
-  ArrowRight
+  ArrowRight,
+  ShoppingBag,
+  Trophy,
+  GraduationCap,
+  Image as ImageIcon,
+  UserCheck
 } from "lucide-react";
 
 export default function Home() {
@@ -43,6 +48,14 @@ export default function Home() {
   };
 
   const menuItems = [
+    {
+      title: "Mezun Store",
+      description: "Eyüboğlu logolu ürünler ve hediyelik eşyalar",
+      icon: ShoppingBag,
+      href: "/store",
+      gradient: "from-orange-500 to-red-500",
+      iconBg: "bg-orange-50 text-orange-600",
+    },
     {
       title: "Üyeler",
       description: "Mezun arkadaşlarınızı bulun",
