@@ -175,6 +175,9 @@ export function Navigation() {
             </DropdownMenuContent>
           </DropdownMenu>
 
+          <Link href="/store" className="text-sm font-medium hover:text-primary transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-sm px-2 py-1" role="menuitem">
+            Mezun Store
+          </Link>
           <Link href="/directory" className="text-sm font-medium hover:text-primary transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-sm px-2 py-1" role="menuitem">
             Üyeler
           </Link>
@@ -413,6 +416,14 @@ export function Navigation() {
               </Link>
             </div>
 
+            <Link 
+              href="/store" 
+              className="block px-4 py-2 text-sm font-medium hover:bg-muted rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+              onClick={() => setMobileMenuOpen(false)}
+              role="menuitem"
+            >
+              Mezun Store
+            </Link>
             <Link 
               href="/directory" 
               className="block px-4 py-2 text-sm font-medium hover:bg-muted rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
