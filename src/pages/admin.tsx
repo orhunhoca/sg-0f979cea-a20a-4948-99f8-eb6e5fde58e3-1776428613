@@ -110,8 +110,26 @@ export default function AdminPage() {
   };
 
   const loadUsers = async () => {
-    const { data } = await profileService.getAllProfiles();
-    if (data) setUsers(data);
+    const { data: profiles } = await profileService.getAllProfiles();
+    
+    if (profiles) {
+      // Load roles for all users
+      const { data: rolesData } = await supabase
+        .from("roles")
+        .select("*");
+
+      const usersWithRoles = profiles.map((profile: any) => {
+        const userRole = rolesData?.find(r => r.user_id === profile.id);
+        return {
+          ...profile,
+          role: userRole?.role || "member",
+          is_admin: userRole?.role === "admin",
+          is_moderator: userRole?.role === "moderator"
+        };
+      });
+
+      setUsers(usersWithRoles);
+    }
     setLoading(false);
   };
 
@@ -227,17 +245,42 @@ export default function AdminPage() {
   };
 
   const handleRoleUpdate = async (userId: string, newRole: string) => {
-    const updates: any = {
-      is_admin: newRole === "admin",
-      is_moderator: newRole === "moderator"
-    };
+    try {
+      // Check if user already has a role entry
+      const { data: existingRole } = await supabase
+        .from("roles")
+        .select("*")
+        .eq("user_id", userId)
+        .single();
 
-    const { error } = await profileService.updateProfileById(userId, updates);
-    if (!error) {
-      toast({ title: "Rol güncellendi" });
-      loadUsers();
-    } else {
-      toast({ title: "Hata", description: error.message, variant: "destructive" });
+      if (existingRole) {
+        // Update existing role
+        const { error } = await supabase
+          .from("roles")
+          .update({ role: newRole })
+          .eq("user_id", userId);
+
+        if (error) {
+          toast({ title: "Hata", description: error.message, variant: "destructive" });
+        } else {
+          toast({ title: "Rol güncellendi" });
+          loadUsers();
+        }
+      } else {
+        // Insert new role
+        const { error } = await supabase
+          .from("roles")
+          .insert({ user_id: userId, role: newRole });
+
+        if (error) {
+          toast({ title: "Hata", description: error.message, variant: "destructive" });
+        } else {
+          toast({ title: "Rol eklendi" });
+          loadUsers();
+        }
+      }
+    } catch (err: any) {
+      toast({ title: "Hata", description: err.message, variant: "destructive" });
     }
   };
 
@@ -413,24 +456,15 @@ export default function AdminPage() {
                               </div>
                             </TableCell>
                             <TableCell>
-                              {u.is_admin ? (
-                                <Badge className="bg-red-500">Admin</Badge>
-                              ) : u.is_moderator ? (
-                                <Badge className="bg-blue-500">Moderatör</Badge>
-                              ) : (
-                                <Badge variant="outline">Kullanıcı</Badge>
-                              )}
-                            </TableCell>
-                            <TableCell>
                               <Select
-                                defaultValue={u.is_admin ? "admin" : u.is_moderator ? "moderator" : "user"}
+                                defaultValue={u.role || "member"}
                                 onValueChange={(val) => handleRoleUpdate(u.id, val)}
                               >
                                 <SelectTrigger className="w-[150px]">
                                   <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  <SelectItem value="user">Kullanıcı</SelectItem>
+                                  <SelectItem value="member">Kullanıcı</SelectItem>
                                   <SelectItem value="moderator">Moderatör</SelectItem>
                                   <SelectItem value="admin">Admin</SelectItem>
                                 </SelectContent>
