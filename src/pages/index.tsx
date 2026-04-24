@@ -143,32 +143,32 @@ export default function Home() {
       <div className="min-h-screen flex flex-col bg-background">
         <Navigation />
         
-        <main className="flex-1">
+        <main className="flex-1" role="main">
           {/* Welcome Section */}
-          <div className="container py-12 md:py-16">
+          <section className="container py-12 md:py-16" aria-labelledby="welcome-heading">
             <div className="text-center mb-12">
-              <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-4 text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent">
+              <h1 id="welcome-heading" className="text-4xl md:text-5xl font-bold tracking-tight mb-4 text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent">
                 Hoş Geldiniz
               </h1>
               <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
                 Eyüboğlu Eğitim Kurumları Mezunlar Derneği
               </p>
-              <div className="w-24 h-1 bg-gradient-to-r from-primary to-accent mx-auto mt-6 rounded-full" />
+              <div className="w-24 h-1 bg-gradient-to-r from-primary to-accent mx-auto mt-6 rounded-full" aria-hidden="true" />
             </div>
 
             {/* Menu Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <nav className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" aria-label="Platform özellikleri">
               {menuItems.map((item) => {
                 const Icon = item.icon;
                 return (
-                  <Link href={item.href} key={item.title}>
-                    <Card className="group h-full overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border-0 ring-1 ring-border/50 bg-card cursor-pointer">
+                  <Link href={item.href} key={item.title} aria-label={`${item.title}: ${item.description}`}>
+                    <Card className="group h-full overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border-0 ring-1 ring-border/50 bg-card cursor-pointer focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2">
                       {/* Top Gradient Line */}
-                      <div className={`h-2 w-full bg-gradient-to-r ${item.gradient}`} />
+                      <div className={`h-2 w-full bg-gradient-to-r ${item.gradient}`} aria-hidden="true" />
                       
                       <CardContent className="p-6">
                         <div className="flex items-start gap-4">
-                          <div className={`p-4 rounded-2xl ${item.iconBg} transition-transform duration-300 group-hover:scale-110`}>
+                          <div className={`p-4 rounded-2xl ${item.iconBg} transition-transform duration-300 group-hover:scale-110`} aria-hidden="true">
                             <Icon className="h-8 w-8" />
                           </div>
                           <div className="flex-1 space-y-1">
@@ -182,34 +182,34 @@ export default function Home() {
                         </div>
 
                         {/* Bottom Animated Line */}
-                        <div className={`h-0.5 w-full bg-gradient-to-r ${item.gradient} mt-6 scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left rounded-full`} />
+                        <div className={`h-0.5 w-full bg-gradient-to-r ${item.gradient} mt-6 scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left rounded-full`} aria-hidden="true" />
                       </CardContent>
                     </Card>
                   </Link>
                 );
               })}
-            </div>
+            </nav>
 
             {/* Call to Action */}
-            <div className="mt-16">
+            <section className="mt-16" aria-labelledby="cta-heading">
               <Card className="bg-gradient-to-br from-primary/10 via-background to-accent/10 border-primary/20 overflow-hidden relative">
                 {/* Decorative background circles */}
-                <div className="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 rounded-full bg-primary/5 blur-3xl" />
-                <div className="absolute bottom-0 left-0 -ml-16 -mb-16 w-64 h-64 rounded-full bg-accent/5 blur-3xl" />
+                <div className="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 rounded-full bg-primary/5 blur-3xl" aria-hidden="true" />
+                <div className="absolute bottom-0 left-0 -ml-16 -mb-16 w-64 h-64 rounded-full bg-accent/5 blur-3xl" aria-hidden="true" />
                 
                 <CardContent className="p-8 md:p-12 text-center relative z-10">
-                  <h2 className="text-2xl md:text-3xl font-bold mb-4">Mezunlar Ağına Katılın</h2>
+                  <h2 id="cta-heading" className="text-2xl md:text-3xl font-bold mb-4">Mezunlar Ağına Katılın</h2>
                   <p className="text-muted-foreground max-w-2xl mx-auto mb-8 text-lg">
                     Bağlantılarınızı güçlendirin, kariyer fırsatlarını yakalayın ve dernek etkinliklerinden haberdar olun.
                   </p>
                   <div className="flex flex-col sm:flex-row justify-center gap-4">
-                    <Button size="lg" asChild className="rounded-full px-8 shadow-md hover:shadow-lg transition-all hover:-translate-y-0.5">
+                    <Button size="lg" asChild className="rounded-full px-8 shadow-md hover:shadow-lg transition-all hover:-translate-y-0.5 focus:ring-2 focus:ring-primary focus:ring-offset-2">
                       <Link href="/directory" className="flex items-center gap-2">
                         Mezunları Keşfet
-                        <ArrowRight className="h-4 w-4" />
+                        <ArrowRight className="h-4 w-4" aria-hidden="true" />
                       </Link>
                     </Button>
-                    <Button size="lg" variant="outline" asChild className="rounded-full px-8 bg-background/50 backdrop-blur-sm border-2 hover:bg-background/80 transition-all hover:-translate-y-0.5">
+                    <Button size="lg" variant="outline" asChild className="rounded-full px-8 bg-background/50 backdrop-blur-sm border-2 hover:bg-background/80 transition-all hover:-translate-y-0.5 focus:ring-2 focus:ring-primary focus:ring-offset-2">
                       <Link href={user ? "/profile" : "/auth/signup"}>
                         {user ? "Profilini Güncelle" : "Aramıza Katıl"}
                       </Link>
@@ -217,8 +217,8 @@ export default function Home() {
                   </div>
                 </CardContent>
               </Card>
-            </div>
-          </div>
+            </section>
+          </section>
         </main>
       </div>
     </>

@@ -155,32 +155,36 @@ export default function ProfilePage() {
       <SEO title="Profilim - Mezunlar Derneği" description="Profil bilgilerinizi güncelleyin" />
       <div className="min-h-screen bg-background">
         <Navigation />
-        <main className="container py-8">
+        <main className="container py-8" role="main">
           <Card className="max-w-3xl mx-auto">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <User className="h-6 w-6" />
+                <User className="h-6 w-6" aria-hidden="true" />
                 Profil Bilgileri
               </CardTitle>
               <CardDescription>Kişisel ve profesyonel bilgilerinizi güncelleyin</CardDescription>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-6">
+              <form onSubmit={handleSubmit} className="space-y-6" aria-label="Profil güncelleme formu">
                 {/* Kişisel Bilgiler */}
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold flex items-center gap-2">
-                    <User className="h-5 w-5" />
+                <fieldset className="space-y-4 border-0">
+                  <legend className="text-lg font-semibold flex items-center gap-2 mb-4">
+                    <User className="h-5 w-5" aria-hidden="true" />
                     Kişisel Bilgiler
-                  </h3>
+                  </legend>
                   
                   <div className="grid gap-4 md:grid-cols-2">
                     <div className="space-y-2">
-                      <Label htmlFor="full_name">Ad Soyad *</Label>
+                      <Label htmlFor="full_name">
+                        Ad Soyad <span className="text-destructive" aria-label="zorunlu">*</span>
+                      </Label>
                       <Input
                         id="full_name"
                         value={fullName}
                         onChange={(e) => setFullName(e.target.value)}
                         required
+                        aria-required="true"
+                        aria-invalid={!fullName}
                       />
                     </div>
 
@@ -192,7 +196,9 @@ export default function ProfilePage() {
                         value={avatarUrl}
                         onChange={(e) => setAvatarUrl(e.target.value)}
                         placeholder="https://example.com/photo.jpg"
+                        aria-describedby="avatar-url-desc"
                       />
+                      <p id="avatar-url-desc" className="sr-only">Profil fotoğrafınızın internet adresini girin</p>
                     </div>
                   </div>
 
@@ -204,22 +210,24 @@ export default function ProfilePage() {
                       onChange={(e) => setBio(e.target.value)}
                       rows={3}
                       placeholder="Kendinizi kısaca tanıtın..."
+                      aria-describedby="bio-desc"
                     />
+                    <p id="bio-desc" className="sr-only">Kendinizi kısaca tanıtan bir açıklama yazın</p>
                   </div>
-                </div>
+                </fieldset>
 
                 {/* Eğitim Bilgileri */}
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold flex items-center gap-2">
-                    <GraduationCap className="h-5 w-5" />
+                <fieldset className="space-y-4 border-0">
+                  <legend className="text-lg font-semibold flex items-center gap-2 mb-4">
+                    <GraduationCap className="h-5 w-5" aria-hidden="true" />
                     Eğitim Bilgileri
-                  </h3>
+                  </legend>
 
                   <div className="grid gap-4 md:grid-cols-2">
                     <div className="space-y-2">
                       <Label htmlFor="high_school_year">Lise Mezuniyet Yılı</Label>
                       <Select value={highSchoolGraduationYear} onValueChange={setHighSchoolGraduationYear}>
-                        <SelectTrigger id="high_school_year">
+                        <SelectTrigger id="high_school_year" aria-label="Lise mezuniyet yılı seç">
                           <SelectValue placeholder="Seçin" />
                         </SelectTrigger>
                         <SelectContent>
@@ -259,7 +267,7 @@ export default function ProfilePage() {
                     <div className="space-y-2">
                       <Label htmlFor="university_status">Üniversite Durumu</Label>
                       <Select value={universityStatus} onValueChange={setUniversityStatus}>
-                        <SelectTrigger id="university_status">
+                        <SelectTrigger id="university_status" aria-label="Üniversite durumu seç">
                           <SelectValue placeholder="Seçin" />
                         </SelectTrigger>
                         <SelectContent>
@@ -274,7 +282,7 @@ export default function ProfilePage() {
                     <div className="space-y-2">
                       <Label htmlFor="university_graduation_year">Üniversite Mezuniyet Yılı</Label>
                       <Select value={universityGraduationYear} onValueChange={setUniversityGraduationYear}>
-                        <SelectTrigger id="university_graduation_year">
+                        <SelectTrigger id="university_graduation_year" aria-label="Üniversite mezuniyet yılı seç">
                           <SelectValue placeholder="Seçin" />
                         </SelectTrigger>
                         <SelectContent>
@@ -289,14 +297,14 @@ export default function ProfilePage() {
                       </Select>
                     </div>
                   )}
-                </div>
+                </fieldset>
 
                 {/* Profesyonel Bilgiler */}
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold flex items-center gap-2">
-                    <Briefcase className="h-5 w-5" />
+                <fieldset className="space-y-4 border-0">
+                  <legend className="text-lg font-semibold flex items-center gap-2 mb-4">
+                    <Briefcase className="h-5 w-5" aria-hidden="true" />
                     Profesyonel Bilgiler
-                  </h3>
+                  </legend>
 
                   <div className="grid gap-4 md:grid-cols-2">
                     <div className="space-y-2">
@@ -319,20 +327,20 @@ export default function ProfilePage() {
                       />
                     </div>
                   </div>
-                </div>
+                </fieldset>
 
                 {/* Lokasyon Bilgileri */}
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold flex items-center gap-2">
-                    <MapPin className="h-5 w-5" />
+                <fieldset className="space-y-4 border-0">
+                  <legend className="text-lg font-semibold flex items-center gap-2 mb-4">
+                    <MapPin className="h-5 w-5" aria-hidden="true" />
                     Lokasyon
-                  </h3>
+                  </legend>
 
                   <div className="grid gap-4 md:grid-cols-2">
                     <div className="space-y-2">
                       <Label htmlFor="country">Ülke</Label>
                       <Select value={country} onValueChange={setCountry}>
-                        <SelectTrigger id="country">
+                        <SelectTrigger id="country" aria-label="Ülke seç">
                           <SelectValue placeholder="Seçin" />
                         </SelectTrigger>
                         <SelectContent>
@@ -359,14 +367,14 @@ export default function ProfilePage() {
                       />
                     </div>
                   </div>
-                </div>
+                </fieldset>
 
                 {/* İletişim Bilgileri */}
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold flex items-center gap-2">
-                    <Phone className="h-5 w-5" />
+                <fieldset className="space-y-4 border-0">
+                  <legend className="text-lg font-semibold flex items-center gap-2 mb-4">
+                    <Phone className="h-5 w-5" aria-hidden="true" />
                     İletişim Bilgileri
-                  </h3>
+                  </legend>
 
                   <div className="space-y-2">
                     <Label htmlFor="phone">Telefon</Label>
@@ -376,13 +384,15 @@ export default function ProfilePage() {
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
                       placeholder="+90 555 123 4567"
+                      aria-describedby="phone-desc"
                     />
+                    <p id="phone-desc" className="sr-only">Telefon numaranızı ülke kodu ile girin</p>
                   </div>
 
                   <div className="grid gap-4 md:grid-cols-2">
                     <div className="space-y-2">
                       <Label htmlFor="linkedin" className="flex items-center gap-2">
-                        <Linkedin className="h-4 w-4" />
+                        <Linkedin className="h-4 w-4" aria-hidden="true" />
                         LinkedIn
                       </Label>
                       <Input
@@ -396,7 +406,7 @@ export default function ProfilePage() {
 
                     <div className="space-y-2">
                       <Label htmlFor="twitter" className="flex items-center gap-2">
-                        <Twitter className="h-4 w-4" />
+                        <Twitter className="h-4 w-4" aria-hidden="true" />
                         Twitter/X
                       </Label>
                       <Input
@@ -410,7 +420,7 @@ export default function ProfilePage() {
 
                     <div className="space-y-2">
                       <Label htmlFor="instagram" className="flex items-center gap-2">
-                        <Instagram className="h-4 w-4" />
+                        <Instagram className="h-4 w-4" aria-hidden="true" />
                         Instagram
                       </Label>
                       <Input
@@ -424,7 +434,7 @@ export default function ProfilePage() {
 
                     <div className="space-y-2">
                       <Label htmlFor="facebook" className="flex items-center gap-2">
-                        <Facebook className="h-4 w-4" />
+                        <Facebook className="h-4 w-4" aria-hidden="true" />
                         Facebook
                       </Label>
                       <Input
@@ -436,10 +446,10 @@ export default function ProfilePage() {
                       />
                     </div>
                   </div>
-                </div>
+                </fieldset>
 
                 {/* Mentorluk */}
-                <div className="space-y-4 border-t pt-4">
+                <fieldset className="space-y-4 border-t pt-4">
                   <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
                       <Label htmlFor="is_mentor" className="text-base">Mentor olmak ister misiniz?</Label>
@@ -449,7 +459,10 @@ export default function ProfilePage() {
                       id="is_mentor"
                       checked={isMentor}
                       onCheckedChange={setIsMentor}
+                      aria-label="Mentor olmak ister misiniz?"
+                      aria-describedby="mentor-desc"
                     />
+                    <p id="mentor-desc" className="sr-only">Aktif etmek için bu düğmeyi kullanın</p>
                   </div>
 
                   {isMentor && (
@@ -466,29 +479,33 @@ export default function ProfilePage() {
                       </div>
 
                       <div className="space-y-2">
-                        <Label>Uzmanlık Alanları</Label>
+                        <Label htmlFor="new_area">Uzmanlık Alanları</Label>
                         <div className="flex gap-2">
                           <Input
+                            id="new_area"
                             value={newArea}
                             onChange={(e) => setNewArea(e.target.value)}
                             placeholder="Alan ekle (örn: Yazılım Geliştirme)"
                             onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), handleAddArea())}
+                            aria-describedby="areas-desc"
                           />
-                          <Button type="button" onClick={handleAddArea} variant="secondary">
+                          <Button type="button" onClick={handleAddArea} variant="secondary" aria-label="Uzmanlık alanı ekle">
                             Ekle
                           </Button>
                         </div>
+                        <p id="areas-desc" className="sr-only">Uzmanlık alanlarınızı girin ve Ekle butonuna basın</p>
                         {mentorshipAreas.length > 0 && (
-                          <div className="flex flex-wrap gap-2 mt-2">
+                          <div className="flex flex-wrap gap-2 mt-2" role="list" aria-label="Eklenen uzmanlık alanları">
                             {mentorshipAreas.map((area) => (
-                              <Badge key={area} variant="secondary" className="gap-1">
+                              <Badge key={area} variant="secondary" className="gap-1" role="listitem">
                                 {area}
                                 <button
                                   type="button"
                                   onClick={() => handleRemoveArea(area)}
-                                  className="ml-1 hover:text-destructive"
+                                  className="ml-1 hover:text-destructive focus:outline-none focus:ring-2 focus:ring-destructive rounded-sm"
+                                  aria-label={`${area} alanını kaldır`}
                                 >
-                                  <X className="h-3 w-3" />
+                                  <X className="h-3 w-3" aria-hidden="true" />
                                 </button>
                               </Badge>
                             ))}
@@ -497,11 +514,11 @@ export default function ProfilePage() {
                       </div>
                     </div>
                   )}
-                </div>
+                </fieldset>
 
-                <Button type="submit" className="w-full" disabled={saving}>
-                  {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Kaydet
+                <Button type="submit" className="w-full focus:ring-2 focus:ring-primary focus:ring-offset-2" disabled={saving} aria-busy={saving}>
+                  {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />}
+                  {saving ? "Kaydediliyor..." : "Kaydet"}
                 </Button>
               </form>
             </CardContent>
